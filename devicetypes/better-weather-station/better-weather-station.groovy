@@ -28,9 +28,30 @@ metadata {
 	simulator {
 		// TODO: define status and reply messages here
 	}
+    
+
+	preferences {
+		input "zipCode", "text", title: "Zip Code", required: false
+	}
 
 	tiles {
-		// TODO: define your main and details tiles here
+    valueTile("temperature", "device.temperature") {
+			state "default", label:'${currentValue}°',
+				backgroundColors:[
+                //Put in Color range for Northern United States Temperature Ranges.
+					[value: -50, color: "#FFFFFF"],
+					[value: -15, color: "#EF8CEF"],
+					[value:  0, color: "#AE1EB8"],
+					[value: 15, color: "#4B12A0"],
+					[value: 31, color: "#153591"],
+					[value: 44, color: "#1e9cbb"],
+					[value: 59, color: "#90d2a7"],
+					[value: 74, color: "#44b621"],
+					[value: 84, color: "#f1d801"],
+					[value: 95, color: "#d04e00"],
+					[value: 96, color: "#bc2323"]
+				]
+		}
 	}
 }
 
@@ -44,6 +65,14 @@ def parse(String description) {
 
 }
 
+def installed() {
+	runPeriodically(3600, poll)
+}
+
+def uninstalled() {
+	unschedule()
+}
+
 // handle commands
 def configure() {
 	log.debug "Executing 'configure'"
@@ -52,12 +81,35 @@ def configure() {
 
 def poll() {
 	log.debug "Executing 'poll'"
-	// TODO: handle 'poll' command
+    def weatherConditions
+    
+    //Grab the appropriate weather based on user's imput
+    if(settings.zipCode){
+    	//Send Zip to WU Web Service
+    	weatherConditions = getWeatherFeature("conditions", settings.zipCode)
+    } else {
+    	//Let the hub send it's assumed location.
+    	weatherConditions = getWeatherFeature("conditions")
+    }
+    
+    if(weatherConditions){
+    	//WU sent information.
+        if(getTemperatureScale() == "C") {
+			send(name: "temperature", value: Math.round(obs.temp_c), unit: "C")
+		} else {
+			send(name: "temperature", value: Math.round(obs.temp_f), unit: "F")
+		}
+    } else {
+    	//Weather Underground did not return any weather inforamtion.
+    	log.warn "Unable to get current weather conditions from Weather Underground API."
+    }
+    
+	log.debug "End Executing 'poll'"
 }
 
 def refresh() {
 	log.debug "Executing 'refresh'"
-	// TODO: handle 'refresh' command
+    //Manually re-trigger the polling event.
+    poll()
+	log.debug "End Executing 'refresh'"
 }
-
-
