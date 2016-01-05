@@ -60,7 +60,7 @@ metadata {
 
 // parse events into attributes
 def parse(String description) {
-	log.debug "Parsing '${description}'"
+	log.debug("Parsing '${description}'")
 	// TODO: handle 'illuminance' attribute
 	// TODO: handle 'humidity' attribute
 	// TODO: handle 'temperature' attribute
@@ -68,17 +68,25 @@ def parse(String description) {
 
 }
 
+//When the Device is installed, fire off this function. Note, does not fire if upgraded.
 def installed() {
-	runPeriodically(3600, poll)
+	log.trace("Executing 'installed'");
+    //TODO: Handle if Scheduler Dies.
+    //TODO: Create Update Command to make user configurable
+	runPeriodically(90, poll)
+	log.trace("End Executing 'installed'");
 }
 
+//When the Device is uninstalled, fire off this function
 def uninstalled() {
+	log.trace("Executing 'uninstalled'");
 	unschedule()
+	log.trace("End Executing 'uninstalled'");
 }
 
 // handle commands
 def configure() {
-	log.debug "Executing 'configure'"
+	log.debug("Executing 'configure'")
 	// TODO: handle 'configure' command
 }
 
@@ -107,16 +115,16 @@ def poll() {
 			sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
 		}
     } else {
-    	//Weather Underground did not return any weather inforamtion.
-    	log.warn "Unable to get current weather conditions from Weather Underground API."
+    	//Weather Underground did not return any weather information.
+    	log.warn("Unable to get current weather conditions from Weather Underground API.")
     }
     
-	log.trace "End Executing 'poll'"
+	log.trace("End Executing 'poll'")
 }
 
 def refresh() {
-	log.trace "Executing 'refresh'"
+	log.trace("Executing 'refresh'")
     //Manually re-trigger the polling event.
     poll()
-	log.trace "End Executing 'refresh'"
+	log.trace("End Executing 'refresh'")
 }
