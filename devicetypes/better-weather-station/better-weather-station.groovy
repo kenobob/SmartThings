@@ -35,23 +35,26 @@ metadata {
 	}
 
 	tiles {
-    valueTile("temperature", "device.temperature") {
-			state "default", label:'${currentValue}°',
-				backgroundColors:[
-                //Put in Color range for Northern United States Temperature Ranges.
-					[value: -50, color: "#FFFFFF"],
-					[value: -15, color: "#EF8CEF"],
-					[value:  0, color: "#AE1EB8"],
-					[value: 15, color: "#4B12A0"],
-					[value: 31, color: "#153591"],
-					[value: 44, color: "#1e9cbb"],
-					[value: 59, color: "#90d2a7"],
-					[value: 74, color: "#44b621"],
-					[value: 84, color: "#f1d801"],
-					[value: 95, color: "#d04e00"],
-					[value: 96, color: "#bc2323"]
-				]
-		}
+        valueTile("temperature", "device.temperature") {
+                state "default", label:'${currentValue}°',
+                    backgroundColors:[
+                    //Put in Color range for Northern United States Temperature Ranges.
+                        [value: -50, color: "#FFFFFF"],
+                        [value: -15, color: "#EF8CEF"],
+                        [value:  0, color: "#AE1EB8"],
+                        [value: 15, color: "#4B12A0"],
+                        [value: 31, color: "#153591"],
+                        [value: 44, color: "#1e9cbb"],
+                        [value: 59, color: "#90d2a7"],
+                        [value: 74, color: "#44b621"],
+                        [value: 84, color: "#f1d801"],
+                        [value: 95, color: "#d04e00"],
+                        [value: 96, color: "#bc2323"]
+                    ]
+        }
+        
+        main "temperature"
+        details(["temperature"])
 	}
 }
 
@@ -80,36 +83,40 @@ def configure() {
 }
 
 def poll() {
-	log.debug "Executing 'poll'"
+	log.trace("Executing 'poll'")
     def weatherConditions
     
     //Grab the appropriate weather based on user's imput
     if(settings.zipCode){
+    	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
     	//Send Zip to WU Web Service
     	weatherConditions = getWeatherFeature("conditions", settings.zipCode)
     } else {
+    	log.debug("Using system Provided Zip for WU Service.")
     	//Let the hub send it's assumed location.
     	weatherConditions = getWeatherFeature("conditions")
     }
     
-    if(weatherConditions){
+    if(weatherConditions && weatherConditions.current_observation){
+    	def obs = weatherConditions.current_observation
     	//WU sent information.
         if(getTemperatureScale() == "C") {
-			send(name: "temperature", value: Math.round(obs.temp_c), unit: "C")
+			sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
 		} else {
-			send(name: "temperature", value: Math.round(obs.temp_f), unit: "F")
+    		log.debug( "Current Temperature: ${obs.temp_f}ºF" )
+			sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
 		}
     } else {
     	//Weather Underground did not return any weather inforamtion.
     	log.warn "Unable to get current weather conditions from Weather Underground API."
     }
     
-	log.debug "End Executing 'poll'"
+	log.trace "End Executing 'poll'"
 }
 
 def refresh() {
-	log.debug "Executing 'refresh'"
+	log.trace "Executing 'refresh'"
     //Manually re-trigger the polling event.
     poll()
-	log.debug "End Executing 'refresh'"
+	log.trace "End Executing 'refresh'"
 }
