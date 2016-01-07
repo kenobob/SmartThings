@@ -23,6 +23,8 @@ metadata {
         capability "Sensor"
         capability "Temperature Measurement"
         capability "Water Sensor"
+        
+        command "refresh"
     }
 
     simulator {
@@ -36,7 +38,7 @@ metadata {
 
     tiles {
         valueTile("temperature", "device.temperature") {
-            state "default", label:'${currentValue}°',
+            state "default", label:'${currentValue}�',
             backgroundColors:[
                 //Put in Color range for Northern United States Temperature Ranges.
                 [value: -50, color: "#FFFFFF"],
@@ -53,7 +55,19 @@ metadata {
             ]
         }
         
-        main "temperature"
+        //Define Humidty settings
+        valueTile("humidity", "device.humidity", decoration:"flat") {
+            state "default", label: "${currentValue} humidity"
+        }
+        
+        //Define Water settings
+        valueTile("water", "device.water", decoration:"flat") {
+            state "default", label: "updating..."
+            state "dry", icon:"st.alarm.water.dry", backgroundColor:"#ffffff"
+            state "wet", icon:"st.alarm.water.wet", backgroundColor:"#53a7c0"
+        }
+        
+        main (["temperature, humidity, water"])
         details(["temperature"])
     }
 }
@@ -74,6 +88,8 @@ def installed() {
     //TODO: Handle if Scheduler Dies.
     //TODO: Create Update Command to make user configurable
     runPeriodically(90, poll)
+    //Run Poll on installation to update the screen right away
+    poll()
     log.trace("End Executing 'installed'");
 }
 
@@ -108,12 +124,25 @@ def poll() {
     if(weatherConditions && weatherConditions.current_observation){
     	def obs = weatherConditions.current_observation
     	//WU sent information.
+        //Temp
         if(getTemperatureScale() == "C") {
             sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
         } else {
-            log.debug( "Current Temperature: ${obs.temp_f}ºF" )
             sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
         }
+        
+        //Precip Notification - WU Sends Huge Decimal places, can't parse to int.
+        if(obs.precip_1hr_in.toDouble() > 0){
+            log.debug("Currently Wet");
+            sendEvent(name: "water", value: "wet")
+        } else {
+            log.debug("Currently Dry");
+            sendEvent(name: "water", value: "dry")
+        }
+        
+        //Humidity
+        log.debug("Humidty${obs.relative_humidity}")
+        sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
     } else {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
@@ -124,7 +153,7 @@ def poll() {
 
 def refresh() {
     log.trace("Executing 'refresh'")
-    //Manually re-trigger the polling event.
+    //Manually poll.
     poll()
     log.trace("End Executing 'refresh'")
 }
