@@ -57,7 +57,7 @@ metadata {
         
         //Define Humidty settings
         valueTile("humidity", "device.humidity", decoration:"flat") {
-            state "default", label: "${currentValue} humidity"
+            state "default", label: '${currentValue} humidity', unit: "Humidity"
         }
         
         //Define Water settings
@@ -141,7 +141,7 @@ def poll() {
         }
         
         //Humidity
-        log.debug("Humidty${obs.relative_humidity}")
+        log.debug("Humidty${obs.relative_humidity.tokenize('%')[0]}")
         sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
     } else {
     	//Weather Underground did not return any weather information.
