@@ -67,8 +67,8 @@ metadata {
             state "wet", icon:"st.alarm.water.wet", backgroundColor:"#53a7c0"
         }
         
-        main (["temperature, humidity, water"])
-        details(["temperature"])
+        main "temperature"
+        details(["temperature", "humidity", "water"])
     }
 }
 
