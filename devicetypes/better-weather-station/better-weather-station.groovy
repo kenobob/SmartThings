@@ -59,7 +59,7 @@ metadata {
         
         //Define Humidty settings
         valueTile("humidity", "device.humidity", decoration:"flat") {
-            state "default", label: "${currentValue} humidity"
+            state "default", label: '${currentValue}% humidity'
         }
         
         //Define Water settings
@@ -79,10 +79,15 @@ metadata {
         valueTile("lowtemperature", "device.lowtemperature") {
             state "default", label:'Low ${currentValue}°',
             backgroundColors: tempRanges
-        }        
+        }
+        
+        //Define refresh button
+        standardTile("refresh", "device.refresh", decoration: "flat") {
+            state "default", label: "", action: "refresh", icon:"st.secondary.refresh"
+        }
         
         main "temperature"
-        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature"])
+        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature", "refresh"])
     }
 }
 
@@ -143,10 +148,10 @@ def poll() {
     	//WU sent information.
         //Temp
         if(getTemperatureScale() == "C") {
-                log.debug("Temp ${obs.temp_c}")
+            log.debug("Temp ${obs.temp_c}")
             sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
         } else {
-                log.debug("Temp ${obs.temp_f}")
+            log.debug("Temp ${obs.temp_f}")
             sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
         }
         
@@ -160,7 +165,7 @@ def poll() {
         }
         
         //Humidity
-        log.debug("Humidty${obs.relative_humidity}")
+        log.debug("Humidty ${obs.relative_humidity.tokenize('%')[0].toInteger()}%")
         sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
     } else {
     	//Weather Underground did not return any weather information.
