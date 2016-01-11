@@ -13,10 +13,25 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+//Predifind temperature ranges.
+def tempRanges = [
+    //Put in Color range for Northern United States Temperature Ranges.
+    [value: -50, color: "#FFFFFF"],
+    [value: -15, color: "#EF8CEF"],
+    [value:  0, color: "#AE1EB8"],
+    [value: 15, color: "#4B12A0"],
+    [value: 31, color: "#153591"],
+    [value: 44, color: "#1e9cbb"],
+    [value: 59, color: "#90d2a7"],
+    [value: 74, color: "#44b621"],
+    [value: 84, color: "#f1d801"],
+    [value: 95, color: "#d04e00"],
+    [value: 96, color: "#bc2323"]
+]
+            
 metadata {
     definition (name: "Better Weather Station", namespace: "kenobobbws", author: "kenobob") {
         capability "Configuration"
-        capability "Illuminance Measurement"
         capability "Polling"
         capability "Refresh"
         capability "Relative Humidity Measurement"
@@ -39,25 +54,12 @@ metadata {
     tiles {
         valueTile("temperature", "device.temperature") {
             state "default", label:'${currentValue}°',
-            backgroundColors:[
-                //Put in Color range for Northern United States Temperature Ranges.
-                [value: -50, color: "#FFFFFF"],
-                [value: -15, color: "#EF8CEF"],
-                [value:  0, color: "#AE1EB8"],
-                [value: 15, color: "#4B12A0"],
-                [value: 31, color: "#153591"],
-                [value: 44, color: "#1e9cbb"],
-                [value: 59, color: "#90d2a7"],
-                [value: 74, color: "#44b621"],
-                [value: 84, color: "#f1d801"],
-                [value: 95, color: "#d04e00"],
-                [value: 96, color: "#bc2323"]
-            ]
+            backgroundColors: tempRanges
         }
         
         //Define Humidty settings
         valueTile("humidity", "device.humidity", decoration:"flat") {
-            state "default", label: '${currentValue} humidity', unit: "Humidity"
+            state "default", label: "${currentValue} humidity"
         }
         
         //Define Water settings
@@ -67,8 +69,20 @@ metadata {
             state "wet", icon:"st.alarm.water.wet", backgroundColor:"#53a7c0"
         }
         
+        //Define High Temp
+        valueTile("hightemperature", "device.hightemperature") {
+            state "default", label:'High ${currentValue}°',
+            backgroundColors: tempRanges
+        }  
+        
+        //Define High Temp
+        valueTile("lowtemperature", "device.lowtemperature") {
+            state "default", label:'Low ${currentValue}°',
+            backgroundColors: tempRanges
+        }        
+        
         main "temperature"
-        details(["temperature", "humidity", "water"])
+        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature"])
     }
 }
 
@@ -87,7 +101,7 @@ def installed() {
     log.trace("Executing 'installed'");
     //TODO: Handle if Scheduler Dies.
     //TODO: Create Update Command to make user configurable
-    runPeriodically(90, poll)
+    runPeriodically(1800, poll)
     //Run Poll on installation to update the screen right away
     poll()
     log.trace("End Executing 'installed'");
@@ -109,16 +123,19 @@ def configure() {
 def poll() {
     log.trace("Executing 'poll'")
     def weatherConditions
+    def weatherForecast
     
     //Grab the appropriate weather based on user's imput
     if(settings.zipCode){
     	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
     	//Send Zip to WU Web Service
     	weatherConditions = getWeatherFeature("conditions", settings.zipCode)
+        weatherForecast = getWeatherFeature("forecast", settings.zipCode)
     } else {
     	log.debug("Using system Provided Zip for WU Service.")
     	//Let the hub send it's assumed location.
     	weatherConditions = getWeatherFeature("conditions")
+        weatherForecast = getWeatherFeature("forecast")
     }
     
     if(weatherConditions && weatherConditions.current_observation){
@@ -126,8 +143,10 @@ def poll() {
     	//WU sent information.
         //Temp
         if(getTemperatureScale() == "C") {
+                log.debug("Temp ${obs.temp_c}")
             sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
         } else {
+                log.debug("Temp ${obs.temp_f}")
             sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
         }
         
@@ -141,13 +160,42 @@ def poll() {
         }
         
         //Humidity
-        log.debug("Humidty${obs.relative_humidity.tokenize('%')[0]}")
+        log.debug("Humidty${obs.relative_humidity}")
         sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
     } else {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
     }
     
+    
+    if(weatherForecast && weatherForecast.forecast && weatherForecast.forecast.simpleforecast && weatherForecast.forecast.simpleforecast.forecastday){
+        //Grab the first day of the forecast
+        def forecastDay = weatherForecast.forecast.simpleforecast.forecastday[0]
+        //WU sent information.
+        //Temp High
+        if(forecastDay.high){
+            if(getTemperatureScale() == "C") {
+                log.debug("High Temp ${forecastDay.high.celsius}")
+                sendEvent(name: "hightemperature", value: forecastDay.high.celsius, unit: "C")
+            } else {
+                log.debug("High Temp ${forecastDay.high.fahrenheit}")
+                sendEvent(name: "hightemperature", value: forecastDay.high.fahrenheit, unit: "F")
+            }
+        }
+        //Temp Low
+        if(forecastDay.low){
+            if(getTemperatureScale() == "C") {
+                log.debug("Low Temp ${forecastDay.low.celsius}")
+                sendEvent(name: "lowtemperature", value: forecastDay.low.celsius, unit: "C")
+            } else {
+                log.debug("Low Temp ${forecastDay.low.fahrenheit}")
+                sendEvent(name: "lowtemperature", value: forecastDay.low.fahrenheit, unit: "F")
+            }
+        } 
+    } else {
+    	//Weather Underground did not return any weather information.
+    	log.warn("Unable to get current weather conditions from Weather Underground API.")
+    }
     log.trace("End Executing 'poll'")
 }
 
