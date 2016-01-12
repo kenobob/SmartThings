@@ -81,6 +81,12 @@ metadata {
             backgroundColors: tempRanges
         }
         
+        //Define Feels Like Temp
+        valueTile("feelsliketemperature", "device.feelsliketemperature") {
+            state "default", label:'Feels Like ${currentValue}°',
+            backgroundColors: tempRanges
+        }
+        
         //Define Location
         valueTile("location", "device.location", decoration: "flat", width: 3, height: 1) {
             state "default", label:'${currentValue}'
@@ -92,16 +98,22 @@ metadata {
         }
         
         main "temperature"
-        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature", "refresh", "location"])
+        details(["temperature", "humidity", "water","feelsliketemperature", "hightemperature", "lowtemperature", "refresh", "location"])
     }
 }
 
 // parse events into attributes
 def parse(String description) {
-    log.debug("Parsing '${description}'")
-    // TODO: handle 'humidity' attribute
-    // TODO: handle 'temperature' attribute
-    // TODO: handle 'water' attribute
+    log.trace("Executing 'parse'")
+    try{
+        log.debug("Parsing '${description}'")
+        // TODO: handle 'humidity' attribute
+        // TODO: handle 'temperature' attribute
+        // TODO: handle 'water' attribute
+    }catch(all){
+        log.error(all)
+    }
+    log.trace("End Executing 'parse'")
 
 }
 
@@ -169,6 +181,14 @@ private def setWeatherConditions(weatherConditions){
         } else {
             log.debug("Temp ${obs.temp_f}F")
             sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
+        }
+        //Temp - Feels like
+        if(getTemperatureScale() == "C") {
+            log.debug("Feels Like ${obs.feelslike_c}C")
+            sendEvent(name: "feelsliketemperature", value: obs.feelslike_c, unit: "C")
+        } else {
+            log.debug("Feels Like ${obs.feelslike_f}F")
+            sendEvent(name: "feelsliketemperature", value: obs.feelslike_f, unit: "F")
         }
         
         //Precip Notification - WU Sends Huge Decimal places, can't parse to int.
