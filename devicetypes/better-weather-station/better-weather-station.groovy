@@ -97,8 +97,55 @@ metadata {
             state "default", label: "", action: "refresh", icon:"st.secondary.refresh"
         }
         
+        standardTile("weatherIcon", "device.weatherIcon", decoration: "flat") {
+			state "default", label: "No Weather Condition"
+			state "chanceflurries", icon:"st.custom.wu1.chanceflurries", label: ""
+			state "chancerain", icon:"st.custom.wu1.chancerain", label: ""
+			state "chancesleet", icon:"st.custom.wu1.chancesleet", label: ""
+			state "chancesnow", icon:"st.custom.wu1.chancesnow", label: ""
+			state "chancetstorms", icon:"st.custom.wu1.chancetstorms", label: ""
+			state "clear", icon:"st.custom.wu1.clear", label: ""
+			state "cloudy", icon:"st.custom.wu1.cloudy", label: ""
+			state "flurries", icon:"st.custom.wu1.flurries", label: ""
+			state "fog", icon:"st.custom.wu1.fog", label: ""
+			state "hazy", icon:"st.custom.wu1.hazy", label: ""
+			state "mostlycloudy", icon:"st.custom.wu1.mostlycloudy", label: ""
+			state "mostlysunny", icon:"st.custom.wu1.mostlysunny", label: ""
+			state "partlycloudy", icon:"st.custom.wu1.partlycloudy", label: ""
+			state "partlysunny", icon:"st.custom.wu1.partlysunny", label: ""
+			state "rain", icon:"st.custom.wu1.rain", label: ""
+			state "sleet", icon:"st.custom.wu1.sleet", label: ""
+			state "snow", icon:"st.custom.wu1.snow", label: ""
+			state "sunny", icon:"st.custom.wu1.sunny", label: ""
+			state "tstorms", icon:"st.custom.wu1.tstorms", label: ""
+			state "cloudy", icon:"st.custom.wu1.cloudy", label: ""
+			state "partlycloudy", icon:"st.custom.wu1.partlycloudy", label: ""
+			state "nt_chanceflurries", icon:"st.custom.wu1.nt_chanceflurries", label: ""
+			state "nt_chancerain", icon:"st.custom.wu1.nt_chancerain", label: ""
+			state "nt_chancesleet", icon:"st.custom.wu1.nt_chancesleet", label: ""
+			state "nt_chancesnow", icon:"st.custom.wu1.nt_chancesnow", label: ""
+			state "nt_chancetstorms", icon:"st.custom.wu1.nt_chancetstorms", label: ""
+			state "nt_clear", icon:"st.custom.wu1.nt_clear", label: ""
+			state "nt_cloudy", icon:"st.custom.wu1.nt_cloudy", label: ""
+			state "nt_flurries", icon:"st.custom.wu1.nt_flurries", label: ""
+			state "nt_fog", icon:"st.custom.wu1.nt_fog", label: ""
+			state "nt_hazy", icon:"st.custom.wu1.nt_hazy", label: ""
+			state "nt_mostlycloudy", icon:"st.custom.wu1.nt_mostlycloudy", label: ""
+			state "nt_mostlysunny", icon:"st.custom.wu1.nt_mostlysunny", label: ""
+			state "nt_partlycloudy", icon:"st.custom.wu1.nt_partlycloudy", label: ""
+			state "nt_partlysunny", icon:"st.custom.wu1.nt_partlysunny", label: ""
+			state "nt_sleet", icon:"st.custom.wu1.nt_sleet", label: ""
+			state "nt_rain", icon:"st.custom.wu1.nt_rain", label: ""
+			state "nt_sleet", icon:"st.custom.wu1.nt_sleet", label: ""
+			state "nt_snow", icon:"st.custom.wu1.nt_snow", label: ""
+			state "nt_sunny", icon:"st.custom.wu1.nt_sunny", label: ""
+			state "nt_tstorms", icon:"st.custom.wu1.nt_tstorms", label: ""
+			state "nt_cloudy", icon:"st.custom.wu1.nt_cloudy", label: ""
+			state "nt_partlycloudy", icon:"st.custom.wu1.nt_partlycloudy", label: ""
+		}
+        
         main "temperature"
-        details(["temperature", "humidity", "water","feelsliketemperature", "hightemperature", "lowtemperature", "refresh", "location"])
+        details(["temperature", "feelsliketemperature", "weatherIcon","humidity", "water", "hightemperature", "lowtemperature", "location", "refresh"])
     }
 }
 
@@ -148,6 +195,7 @@ def configure() {
     log.debug("Executing 'configure'")
     // TODO: handle 'configure' command
 }
+
 private def getWeatherInfo(){
     def weather = [
         Conditions: null,
@@ -207,6 +255,12 @@ private def setWeatherConditions(weatherConditions){
         //location
         log.debug("Location ${obs.observation_location.full}")
         sendEvent(name: "location", value: obs.observation_location.full)
+        
+        //Weather Icon
+        def weatherIcon = obs.icon_url.split("/")[-1].split("\\.")[0]
+        log.debug("Weather Icon ${weatherIcon}")
+        sendEvent(name: "weatherIcon", value: weatherIcon, displayed: false)
+        
     } else {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
