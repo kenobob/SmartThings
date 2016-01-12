@@ -39,7 +39,9 @@ metadata {
         capability "Temperature Measurement"
         capability "Water Sensor"
         
-        command "refresh"
+        //Expose custom attributes to Smart Apps
+        attribute "hightemperature","number"
+        attribute "lowtemperature","number"
     }
 
     simulator {
@@ -151,7 +153,7 @@ metadata {
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon","humidity", "water", "hightemperature", "lowtemperature", "location", "observedtime", "refresh"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "refresh", "observedtime", "location"])
     }
 }
 
