@@ -108,9 +108,13 @@ def parse(String description) {
 //When the Device is installed, fire off this function. Note, does not fire if upgraded.
 def installed() {
     log.trace("Executing 'installed'");
-    //TODO: Handle if Scheduler Dies.
-    //TODO: Create Update Command to make user configurable
-    runPeriodically(1800, poll)
+    try{
+        //TODO: Handle if Scheduler Dies.
+        //TODO: Create Update Command to make user configurable
+        runPeriodically(1800, poll)
+    }catch(all){
+        log.error(all)
+    }
     //Run Poll on installation to update the screen right away
     poll()
     log.trace("End Executing 'installed'");
@@ -119,7 +123,11 @@ def installed() {
 //When the Device is uninstalled, fire off this function
 def uninstalled() {
     log.trace("Executing 'uninstalled'");
-    unschedule()
+    try{
+        unschedule()
+    }catch(all){
+        log.error(all)
+    }
     log.trace("End Executing 'uninstalled'");
 }
 
@@ -219,12 +227,14 @@ private def setWeatherForecast(weatherForecast){
 
 def poll() {
     log.trace("Executing 'poll'")
+    try{
+        def weather = getWeatherInfo()
     
-    def weather = getWeatherInfo()
-    
-    setWeatherConditions(weather.Conditions)
-    setWeatherForecast(weather.Forecast)
-    
+        setWeatherConditions(weather.Conditions)
+        setWeatherForecast(weather.Forecast)
+    }catch(all){
+        log.error(all)
+    }
     log.trace("End Executing 'poll'")
 }
 
