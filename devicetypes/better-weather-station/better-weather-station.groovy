@@ -81,20 +81,24 @@ metadata {
             backgroundColors: tempRanges
         }
         
+        //Define Location
+        valueTile("location", "device.location", decoration: "flat", width: 3, height: 1) {
+            state "default", label:'${currentValue}'
+        }
+        
         //Define refresh button
         standardTile("refresh", "device.refresh", decoration: "flat") {
             state "default", label: "", action: "refresh", icon:"st.secondary.refresh"
         }
         
         main "temperature"
-        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature", "refresh"])
+        details(["temperature", "humidity", "water", "hightemperature", "lowtemperature", "refresh", "location"])
     }
 }
 
 // parse events into attributes
 def parse(String description) {
     log.debug("Parsing '${description}'")
-    // TODO: handle 'illuminance' attribute
     // TODO: handle 'humidity' attribute
     // TODO: handle 'temperature' attribute
     // TODO: handle 'water' attribute
@@ -152,10 +156,10 @@ private def setWeatherConditions(weatherConditions){
     	//WU sent information.
         //Temp
         if(getTemperatureScale() == "C") {
-            log.debug("Temp ${obs.temp_c}")
+            log.debug("Temp ${obs.temp_c}C")
             sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
         } else {
-            log.debug("Temp ${obs.temp_f}")
+            log.debug("Temp ${obs.temp_f}F")
             sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
         }
         
@@ -171,6 +175,10 @@ private def setWeatherConditions(weatherConditions){
         //Humidity
         log.debug("Humidty ${obs.relative_humidity.tokenize('%')[0].toInteger()}%")
         sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
+        
+        //location
+        log.debug("Location ${obs.observation_location.full}")
+        sendEvent(name: "location", value: obs.observation_location.full)
     } else {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
