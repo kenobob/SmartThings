@@ -124,25 +124,29 @@ def configure() {
     log.debug("Executing 'configure'")
     // TODO: handle 'configure' command
 }
-
-def poll() {
-    log.trace("Executing 'poll'")
-    def weatherConditions
-    def weatherForecast
+private def getWeatherInfo(){
+    def weather = [
+        Conditions: null,
+        Forecast: null
+    ]
     
     //Grab the appropriate weather based on user's imput
     if(settings.zipCode){
     	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
     	//Send Zip to WU Web Service
-    	weatherConditions = getWeatherFeature("conditions", settings.zipCode)
-        weatherForecast = getWeatherFeature("forecast", settings.zipCode)
+    	weather.Conditions = getWeatherFeature("conditions", settings.zipCode)
+        weather.Forecast = getWeatherFeature("forecast", settings.zipCode)
     } else {
     	log.debug("Using system Provided Zip for WU Service.")
     	//Let the hub send it's assumed location.
-    	weatherConditions = getWeatherFeature("conditions")
-        weatherForecast = getWeatherFeature("forecast")
+    	weather.Conditions = getWeatherFeature("conditions")
+        weather.Forecast = getWeatherFeature("forecast")
     }
     
+    return weather
+}
+
+private def setWeatherConditions(weatherConditions){
     if(weatherConditions && weatherConditions.current_observation){
     	def obs = weatherConditions.current_observation
     	//WU sent information.
@@ -171,8 +175,10 @@ def poll() {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
     }
-    
-    
+}
+
+private def setWeatherForecast(weatherForecast){
+
     if(weatherForecast && weatherForecast.forecast && weatherForecast.forecast.simpleforecast && weatherForecast.forecast.simpleforecast.forecastday){
         //Grab the first day of the forecast
         def forecastDay = weatherForecast.forecast.simpleforecast.forecastday[0]
@@ -201,6 +207,16 @@ def poll() {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Underground API.")
     }
+}
+
+def poll() {
+    log.trace("Executing 'poll'")
+    
+    def weather = getWeatherInfo()
+    
+    setWeatherConditions(weather.Conditions)
+    setWeatherForecast(weather.Forecast)
+    
     log.trace("End Executing 'poll'")
 }
 
