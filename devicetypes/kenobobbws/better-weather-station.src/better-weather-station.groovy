@@ -28,6 +28,16 @@ def tempRanges = [
     [value: 95, color: "#d04e00"],
     [value: 96, color: "#bc2323"]
 ]
+
+def uvRangs = [
+[value: 1, color:  "#289500"],
+[value: 3, color:  "#f7e400"],
+[value: 6, color:  "#f85900"],
+[value: 8, color:  "#d8001d"],
+[value: 11, color:  "#6b49c8"],
+
+    
+]
             
 metadata {
     definition (name: "Better Weather Station", namespace: "kenobobbws", author: "kenobob") {
@@ -42,6 +52,7 @@ metadata {
         //Expose custom attributes to Smart Apps
         attribute "hightemperature","number"
         attribute "lowtemperature","number"
+        attribute "uv","number"
     }
 
     simulator {
@@ -87,6 +98,13 @@ metadata {
         valueTile("feelsliketemperature", "device.feelsliketemperature") {
             state "default", label:'Feels Like ${currentValue}°',
             backgroundColors: tempRanges
+        }
+        
+        
+        //Define UV Index
+        valueTile("uv", "device.uv") {
+            state "default", label:'UV Index ${currentValue}',
+            backgroundColors: uvRangs
         }
         
         //Define Location
@@ -153,7 +171,7 @@ metadata {
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "refresh", "observedtime", "location"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime", "location"])
     }
 }
 
@@ -272,6 +290,10 @@ private def setWeatherConditions(weatherConditions){
         //Observation Time
         log.debug(obs.observation_time)
         sendEvent(name: "observedtime", value: obs.observation_time)
+        
+        //UV Index
+        log.debug(obs.UV)
+        sendEvent(name: "uv", value: obs.UV)
         
     } else {
     	//Weather Underground did not return any weather information.
