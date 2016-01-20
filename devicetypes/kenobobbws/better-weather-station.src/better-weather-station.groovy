@@ -171,7 +171,7 @@ metadata {
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime" /*, "location"*/])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime" , "location"])
     }
 }
 
