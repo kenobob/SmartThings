@@ -66,7 +66,7 @@ metadata {
 
     tiles {
         valueTile("temperature", "device.temperature") {
-            state "default", label:'${currentValue}Â°',
+            state "default", label:'${currentValue}°',
             backgroundColors: tempRanges
         }
         
@@ -84,19 +84,19 @@ metadata {
         
         //Define High Temp
         valueTile("hightemperature", "device.hightemperature") {
-            state "default", label:'High ${currentValue}Â°',
+            state "default", label:'High ${currentValue}°',
             backgroundColors: tempRanges
         }  
         
         //Define High Temp
         valueTile("lowtemperature", "device.lowtemperature") {
-            state "default", label:'Low ${currentValue}Â°',
+            state "default", label:'Low ${currentValue}°',
             backgroundColors: tempRanges
         }
         
         //Define Feels Like Temp
         valueTile("feelsliketemperature", "device.feelsliketemperature") {
-            state "default", label:'Feels Like ${currentValue}Â°',
+            state "default", label:'Feels Like ${currentValue}°',
             backgroundColors: tempRanges
         }
         
@@ -171,7 +171,7 @@ metadata {
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime", "location"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime" /*, "location"*/])
     }
 }
 
