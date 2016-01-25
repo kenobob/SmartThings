@@ -13,6 +13,36 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
+//Beaufort Scale
+def windRanges = [
+    //0 - Calm
+    [value: 0, color: "#FFFFFF"],
+    //1 - Light air
+    [value: 1, color: "#CCFFFF"],
+    //2 - Light breeze
+    [value: 4, color: "#99FFCC"],
+    //3 - Gentle breeze
+    [value: 8, color: "#99FF99"],
+    //4 - Moderate breeze
+    [value: 13, color: "#99FF66"],
+    //5 - Fresh breeze
+    [value: 19, color: "#99FF00"],
+    //6 - Strong breeze
+    [value: 25, color: "#CCFF00"],
+    //7 - High wind, moderate gale, near gale
+    [value: 32, color: "#FFFF00"],
+    //8 - Gale, fresh gale
+    [value: 39, color: "#FFCC00"],
+    //9 - Strong/severe gale
+    [value: 47, color: "#FF9900"],
+    //10 - Storm, Whole Gale
+    [value: 55, color: "#FF6600"],
+    //11 - Violent storm
+    [value: 64, color: "#FF3300"],
+    //12 -Hurricane Force
+    [value: 73, color: "#FF0000"]
+]
+
 //Predifind temperature ranges.
 def tempRanges = [
     //Put in Color range for Northern United States Temperature Ranges.
@@ -30,11 +60,11 @@ def tempRanges = [
 ]
 
 def uvRangs = [
-[value: 1, color:  "#289500"],
-[value: 3, color:  "#f7e400"],
-[value: 6, color:  "#f85900"],
-[value: 8, color:  "#d8001d"],
-[value: 11, color:  "#6b49c8"],
+    [value: 1, color:  "#289500"],
+    [value: 3, color:  "#f7e400"],
+    [value: 6, color:  "#f85900"],
+    [value: 8, color:  "#d8001d"],
+    [value: 11, color:  "#6b49c8"],
 
     
 ]
@@ -53,6 +83,8 @@ metadata {
         attribute "hightemperature","number"
         attribute "lowtemperature","number"
         attribute "uv","number"
+        attribute "wind","number"
+        attribute "windgust","number"
     }
 
     simulator {
@@ -169,9 +201,18 @@ metadata {
             state "nt_partlycloudy", icon:"st.custom.wu1.nt_partlycloudy", label: ""
         }
         
+        valueTile("windgust", "device.windgust") {
+            state "default", label:'Gusts ${currentValue}°',
+            backgroundColors: windRanges
+        }
+        valueTile("wind", "device.wind") {
+            state "default", label:'Wind ${currentValue}°',
+            backgroundColors: windRanges
+        }
+        
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "refresh", "observedtime" , "location"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "wind", "windgust", "refresh", "observedtime" , "location"])
     }
 }
 
@@ -248,21 +289,30 @@ private def setWeatherConditions(weatherConditions){
     if(weatherConditions && weatherConditions.current_observation){
     	def obs = weatherConditions.current_observation
     	//WU sent information.
-        //Temp
-        if(getTemperatureScale() == "C") {
+        if(location.temperatureScale == "C") {
+            //Temp
             log.debug("Temp ${obs.temp_c}C")
             sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
-        } else {
-            log.debug("Temp ${obs.temp_f}F")
-            sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
-        }
-        //Temp - Feels like
-        if(getTemperatureScale() == "C") {
+            //Temp - Feels like
             log.debug("Feels Like ${obs.feelslike_c}C")
             sendEvent(name: "feelsliketemperature", value: obs.feelslike_c, unit: "C")
+            //Wind
+            log.debug("Wind speeds ${obs.wind_kph} KPH")
+            sendEvent(name: "wind", value: obs.wind_kph, unit: "kph")
+            log.debug("Wind Gusts ${obs.wind_gust_kph} KPH")
+            sendEvent(name: "windgust", value: obs.wind_gust_kph, unit: "kph")
         } else {
+            //Temp
+            log.debug("Temp ${obs.temp_f}F")
+            sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
+            //Temp - Feels like
             log.debug("Feels Like ${obs.feelslike_f}F")
             sendEvent(name: "feelsliketemperature", value: obs.feelslike_f, unit: "F")
+            //Wind            
+            log.debug("Wind speeds ${obs.wind_mph} MPH")
+            sendEvent(name: "wind", value: obs.wind_mph, unit: "mph")
+            log.debug("Wind Gusts ${obs.wind_gust_mph} MPH")   
+            sendEvent(name: "windgust", value: obs.wind_gust_mph, unit: "mph")
         }
         
         //Precip Notification - WU Sends Huge Decimal places, can't parse to int.
@@ -292,8 +342,9 @@ private def setWeatherConditions(weatherConditions){
         sendEvent(name: "observedtime", value: obs.observation_time)
         
         //UV Index
-        log.debug(obs.UV)
+        log.debug("UV Index ${obs.UV}")
         sendEvent(name: "uv", value: obs.UV)
+        
         
     } else {
     	//Weather Underground did not return any weather information.
@@ -309,7 +360,7 @@ private def setWeatherForecast(weatherForecast){
         //WU sent information.
         //Temp High
         if(forecastDay.high){
-            if(getTemperatureScale() == "C") {
+            if(location.temperatureScale == "C") {
                 log.debug("High Temp ${forecastDay.high.celsius}")
                 sendEvent(name: "hightemperature", value: forecastDay.high.celsius, unit: "C")
             } else {
@@ -319,7 +370,7 @@ private def setWeatherForecast(weatherForecast){
         }
         //Temp Low
         if(forecastDay.low){
-            if(getTemperatureScale() == "C") {
+            if(location.temperatureScale == "C") {
                 log.debug("Low Temp ${forecastDay.low.celsius}")
                 sendEvent(name: "lowtemperature", value: forecastDay.low.celsius, unit: "C")
             } else {
