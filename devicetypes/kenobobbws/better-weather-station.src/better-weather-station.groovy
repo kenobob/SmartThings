@@ -60,13 +60,12 @@ def tempRanges = [
 ]
 
 def uvRangs = [
+    [value: 0, color: "#FFFFFF"],
     [value: 1, color:  "#289500"],
     [value: 3, color:  "#f7e400"],
     [value: 6, color:  "#f85900"],
     [value: 8, color:  "#d8001d"],
-    [value: 11, color:  "#6b49c8"],
-
-    
+    [value: 11, color:  "#6b49c8"],    
 ]
             
 metadata {
@@ -93,6 +92,7 @@ metadata {
     
 
     preferences {
+        input "refreshMinutes", "number", title: "Auto Refresh Minutes", required: false
         input "zipCode", "text", title: "Zip Code", required: false
     }
 
@@ -202,17 +202,17 @@ metadata {
         }
         
         valueTile("windgust", "device.windgust") {
-            state "default", label:'Gusts ${currentValue}°',
+            state "default", label:'Gusts ${currentValue}',
             backgroundColors: windRanges
         }
         valueTile("wind", "device.wind") {
-            state "default", label:'Wind ${currentValue}°',
+            state "default", label:'Wind ${currentValue}',
             backgroundColors: windRanges
         }
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "water", "lowtemperature", "uv", "wind", "windgust", "refresh", "observedtime" , "location"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "wind", "lowtemperature", "uv", "windgust", "water", "refresh", "observedtime" , "location"])
     }
 }
 
