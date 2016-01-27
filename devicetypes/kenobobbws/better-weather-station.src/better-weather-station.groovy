@@ -92,7 +92,7 @@ metadata {
     
 
     preferences {
-        input "refreshMinutes", "number", title: "Auto Refresh Minutes", required: false
+        input "refreshMinutes", "number", title: "Auto Refresh Minutes", required: false, defaultValue: 30
         input "zipCode", "text", title: "Zip Code", required: false
     }
 
@@ -233,28 +233,26 @@ def parse(String description) {
 
 //When the Device is installed, fire off this function. Note, does not fire if upgraded.
 def installed() {
-    log.trace("Executing 'installed'");
+    log.trace("Executing 'installed'")
     try{
-        //TODO: Handle if Scheduler Dies.
-        //TODO: Create Update Command to make user configurable
-        runPeriodically(1800, poll)
+        schedulePolling()
     }catch(all){
         log.error(all)
     }
     //Run Poll on installation to update the screen right away
     poll()
-    log.trace("End Executing 'installed'");
+    log.trace("End Executing 'installed'")
 }
 
 //When the Device is uninstalled, fire off this function
 def uninstalled() {
-    log.trace("Executing 'uninstalled'");
+    log.trace("Executing 'uninstalled'")
     try{
         unschedule()
     }catch(all){
         log.error(all)
     }
-    log.trace("End Executing 'uninstalled'");
+    log.trace("End Executing 'uninstalled'")
 }
 
 // handle commands
@@ -401,13 +399,32 @@ def refresh() {
     log.trace("Executing 'refresh'")
     //Manually poll.
     try{
-    	//This is a long running function, but it's okay we are clicking refresh
-        unschedule()
-        //Reset Polling
-        runPeriodically(1800, poll)
+        reschedulePolling()
     }catch(all){
         log.error(all)
     }
     poll()
     log.trace("End Executing 'refresh'")
+}
+
+//TODO, clean this up
+def reschedulePolling(){
+    log.trace("Executing 'reschedulePolling'")
+    //This is a long running function
+    unschedule()
+    schedulePolling()
+    log.trace("End Executing 'reschedulePolling'")
+}
+
+def schedulePolling(){
+    log.trace("Executing 'schedulePolling'")
+    def scheduledMinues = 30 * 60
+    if(settings.refreshMinutes){
+        scheduledMinues = settings.refreshMinutes * 60
+    }
+    
+    log.debug("Scheduled seconds : ${scheduledMinues}")
+    //Set Polling
+    runPeriodically(scheduledMinues, poll)
+    log.trace("End Executing 'schedulePolling'")
 }
