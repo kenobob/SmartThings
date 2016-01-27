@@ -408,7 +408,7 @@ def refresh() {
 }
 
 //TODO, clean this up
-def reschedulePolling(){
+private def reschedulePolling(){
     log.trace("Executing 'reschedulePolling'")
     //This is a long running function
     unschedule()
@@ -416,7 +416,7 @@ def reschedulePolling(){
     log.trace("End Executing 'reschedulePolling'")
 }
 
-def schedulePolling(){
+private def schedulePolling(){
     log.trace("Executing 'schedulePolling'")
     def scheduledMinues = 30 * 60
     if(settings.refreshMinutes){
