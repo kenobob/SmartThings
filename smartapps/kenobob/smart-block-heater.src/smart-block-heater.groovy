@@ -25,14 +25,15 @@ definition(
 
 
 preferences {
-    section("For this amount of time") {
-        input "minutes", "number", title: "Minutes?"
+    section("On for this amount of time") {
+        input "minutes", "number", title: "Minutes?", required: true
     }
-    section("After this time of day") {
-        input "timeOfDay", "time", title: "Time?"
+    //Time or Mode, not sure yet.
+    section("When does your quiet hours start?") {
+        input "timeOfDay", "time", title: "Time?", required: true
     }
-    section("And (optionally) these switches are all off") {
-        input "switches", "capability.switch", multiple: true, required: false
+    section("Which Switch is your block heater plugged into?") {
+        input "switches", "capability.switch", multiple: true, required: true
     }
     section( "Notifications" ) {
         input("recipients", "contact", title: "Send notifications to") {
