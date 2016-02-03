@@ -18,21 +18,21 @@ def windRanges = [
     //0 - Calm
     [value: 0, color: "#FFFFFF"],
     //1 - Light air
-    [value: 1, color: "#CCFFFF"],
+    //[value: 1, color: "#CCFFFF"],
     //2 - Light breeze
-    [value: 4, color: "#99FFCC"],
+    [value: 4, color: "#1E9CBB"],
     //3 - Gentle breeze
-    [value: 8, color: "#99FF99"],
+    //[value: 8, color: "#99FF99"],
     //4 - Moderate breeze
-    [value: 13, color: "#99FF66"],
+    [value: 13, color: "#44B621"],
     //5 - Fresh breeze
-    [value: 19, color: "#99FF00"],
+    //[value: 19, color: "#99FF00"],
     //6 - Strong breeze
-    [value: 25, color: "#CCFF00"],
+    //[value: 25, color: "#CCFF00"],
     //7 - High wind, moderate gale, near gale
-    [value: 32, color: "#FFFF00"],
+    [value: 32, color: "#F1D801"],
     //8 - Gale, fresh gale
-    [value: 39, color: "#FFCC00"],
+    //[value: 39, color: "#FFCC00"],
     //9 - Strong/severe gale
     [value: 47, color: "#FF9900"],
     //10 - Storm, Whole Gale
@@ -40,7 +40,7 @@ def windRanges = [
     //11 - Violent storm
     [value: 64, color: "#FF3300"],
     //12 -Hurricane Force
-    [value: 73, color: "#FF0000"]
+    [value: 73, color: "#BC2323"]
 ]
 
 //Predifind temperature ranges.
