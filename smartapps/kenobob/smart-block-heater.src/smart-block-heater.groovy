@@ -26,7 +26,7 @@ definition(
 
 preferences {
     section("On for this amount of time") {
-        input "minutes", "number", title: "Minutes?", required: true
+        input (name: "minutes", type: "number", title: "Minutes?", required: true)
     }
     //Time or Mode, not sure yet.
     section("When does your quiet hours start?") {
@@ -34,6 +34,9 @@ preferences {
     }
     section("Which Switch is your block heater plugged into?") {
         input "switches", "capability.switch", multiple: true, required: true
+    }
+    section("Temperature Sensor"){
+        input "bwsTemperatureMeasurement", "capability.temperatureMeasurement", multiple: false, required: true
     }
     section( "Notifications" ) {
         input("recipients", "contact", title: "Send notifications to") {
@@ -57,7 +60,32 @@ def updated() {
 }
 
 def initialize() {
+    log.trace("Executing Initialize")
     // TODO: subscribe to attributes, devices, locations, etc.
+    createSubscriptions()
+    log.trace("End Initialize")
 }
 
+
+private def createSubscriptions()
+{
+    log.trace("Executing Create Subscriptions")
+    subscribe(bwsTemperatureMeasurement, "lowtemperature", temperatureChanges)
+    //	subscribe(motionSensors, "motion.active", motionActiveHandler)
+    //	subscribe(motionSensors, "motion.inactive", motionInactiveHandler)
+    //	subscribe(switches, "switch.off", switchOffHandler)
+    //	subscribe(location, modeChangeHandler)
+    //
+    //	if (state.modeStartTime == null) {
+    //		state.modeStartTime = 0
+    //	}
+    log.trace("End Create Subscriptions")
+}
+
+
 // TODO: implement event handlers
+def temperatureChanges(evt){
+    
+    log.trace("Executing Create Subscriptions")
+    log.debug "The Low Changed To: ${evt.numericValue}"
+}
