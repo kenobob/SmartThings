@@ -418,13 +418,13 @@ private def reschedulePolling(){
 
 private def schedulePolling(){
     log.trace("Executing 'schedulePolling'")
-    def scheduledMinues = 30 * 60
+    def scheduledMinues = 30
     if(settings.refreshMinutes){
-        scheduledMinues = settings.refreshMinutes * 60
+        scheduledMinues = settings.refreshMinutes
     }
     
     log.debug("Scheduled seconds : ${scheduledMinues}")
     //Set Polling
-    runPeriodically(scheduledMinues, poll)
+    schedule("0 0/${scheduledMinues} * 1/1 * ?", poll)
     log.trace("End Executing 'schedulePolling'")
 }
