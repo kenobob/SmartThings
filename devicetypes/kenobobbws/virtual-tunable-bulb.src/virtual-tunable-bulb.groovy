@@ -19,6 +19,8 @@ metadata {
         capability "Switch"
         capability "Refresh"
         capability "Switch Level"
+		capability "Actuator"
+        capability "Color Temperature"
     }
 
 	// simulator metadata
@@ -36,6 +38,9 @@ metadata {
             }
 			tileAttribute ("device.level", key: "SLIDER_CONTROL") {
                 attributeState "level", action:"switch level.setLevel"
+            }			
+            tileAttribute ("colorName", key: "SECONDARY_CONTROL") {
+                attributeState "colorName", label:'${currentValue}'
             }
 		}
 		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
@@ -44,9 +49,15 @@ metadata {
         valueTile("lValue", "device.level", inactiveLabel: true, height:1, width:1, decoration: "flat") {
             state "levelValue", label:'${currentValue}%', unit:"", backgroundColor: "#53a7c0"
         }
+		controlTile("colorTempSliderControl", "device.colorTemperature", "slider", width: 4, height: 2, inactiveLabel: false, range:"(2700..6500)") {
+            state "colorTemperature", action:"color temperature.setColorTemperature"
+        }
+        valueTile("colorTemp", "device.colorTemperature", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "colorTemperature", label: '${currentValue} K'
+        }
 
 		main(["switch"])
-		details(["switch", "refresh","lValue"])
+		details(["switch", "colorTempSliderControl", "colorTemp", "refresh","lValue"])
 	}
 }
 
@@ -55,11 +66,13 @@ def parse(String description) {
 
 def on() {
 	sendEvent(name: "switch", value: "on")
+ 	sendEvent(name: "level", value: 100)
     log.info "Dimmer On"
 }
 
 def off() {
 	sendEvent(name: "switch", value: "off")
+ 	sendEvent(name: "level", value: 0)
     log.info "Dimmer Off"
 }
 
@@ -77,4 +90,54 @@ def setLevel(val){
 
 def refresh() {
     log.info "refresh"
+}
+
+//range 2700k - 6500k
+def setColorTemperature(value) {
+    log.debug ("Color Temp: ${value}")
+	
+	//Fix bug in SM
+	if( 0 <= value && value <= 100)
+	{
+		log.trace("Adjust values to smartthings bug")
+		//Let's do some basic math.
+		def difference = 3800;
+		def percentatage = value/100;
+		value = (difference * percentatage) + 2700;
+        //convert back to int
+        value = value.toInteger()
+        log.trace("Bug Adjustment: ${value}")
+	}
+    
+	//Ensure not out of range occurs
+	if (value < 2700){ 
+    	log.trace("Value out of range, to low. ${value}");
+    	value = 2700
+    }
+    else if( value > 6500) {
+    	log.trace("Value out of range, to high. ${value}");
+    	value = 6500
+    }
+	
+    log.debug ("Adjusted Color Temp: ${value}")
+    
+    setGenericName(value)
+	sendEvent(name: "colorTemperature", value: value)
+}
+
+//Naming based on the wiki article here: http://en.wikipedia.org/wiki/Color_temperature
+def setGenericName(value){
+    if (value != null) {
+        def genericName = "White"
+        if (value < 3300) {
+            genericName = "Soft White"
+        } else if (value < 4150) {
+            genericName = "Moonlight"
+        } else if (value <= 5000) {
+            genericName = "Cool White"
+        } else if (value >= 5000) {
+            genericName = "Daylight"
+        }
+        sendEvent(name: "colorName", value: genericName)
+    }
 }
