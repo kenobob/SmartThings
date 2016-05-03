@@ -13,7 +13,16 @@
  *  for the specific language governing permissions and limitations under the License.
  *
  */
-            
+
+
+def lightColorRange = [
+
+    [value: 2699, color: "#ff9329"],
+	[value: 4600, color: "#92d6f3"],
+	[value:	6500, color: "#0000ff"]	
+
+]
+		 
 metadata {
     definition (name: "Virtual Tunable Bulb", namespace: "kenobobbws", author: "kenobob") {
         capability "Switch"
@@ -21,6 +30,7 @@ metadata {
         capability "Switch Level"
 		capability "Actuator"
         capability "Color Temperature"
+        attribute "colorName","string"
     }
 
 	// simulator metadata
@@ -38,26 +48,28 @@ metadata {
             }
 			tileAttribute ("device.level", key: "SLIDER_CONTROL") {
                 attributeState "level", action:"switch level.setLevel"
-            }			
-            tileAttribute ("colorName", key: "SECONDARY_CONTROL") {
-                attributeState "colorName", label:'${currentValue}'
             }
 		}
-		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat") {
+		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
 			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
 		}
-        valueTile("lValue", "device.level", inactiveLabel: true, height:1, width:1, decoration: "flat") {
+        valueTile("lValue", "device.level", inactiveLabel: true, width: 2, height: 2, decoration: "flat") {
             state "levelValue", label:'${currentValue}%', unit:"", backgroundColor: "#53a7c0"
         }
 		controlTile("colorTempSliderControl", "device.colorTemperature", "slider", width: 4, height: 2, inactiveLabel: false, range:"(2700..6500)") {
             state "colorTemperature", action:"color temperature.setColorTemperature"
         }
         valueTile("colorTemp", "device.colorTemperature", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-            state "colorTemperature", label: '${currentValue} K'
+            state "colorTemperature", label: '${currentValue} K',
+            backgroundColors: lightColorRange
+        }
+		valueTile("colorName", "device.colorName", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:'${currentValue}',
+            backgroundColors: lightColorRange
         }
 
 		main(["switch"])
-		details(["switch", "colorTempSliderControl", "colorTemp", "refresh","lValue"])
+		details(["switch", "colorTempSliderControl", "colorTemp", "colorName", "refresh","lValue"])
 	}
 }
 
