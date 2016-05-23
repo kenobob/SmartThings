@@ -17,9 +17,10 @@
 
 def lightColorRange = [
 
-    [value: 2699, color: "#ff9329"],
-	[value: 4600, color: "#92d6f3"],
-	[value:	6500, color: "#0000ff"]	
+    [value: 2700, color: "#ff9329"],
+    [value: 3650, color: "#fbf9cd"],    
+    [value: 4600, color: "#92d6f3"],
+    [value: 6500, color: "#0000ff"]	
 
 ]
 		 
@@ -28,101 +29,137 @@ metadata {
         capability "Switch"
         capability "Refresh"
         capability "Switch Level"
-		capability "Actuator"
+        capability "Actuator"
         capability "Color Temperature"
         attribute "colorName","string"
     }
+    
+    preferences {
+        input "doesRememberState", "bool", title: "Remeber Previous State", required: false, defaultValue: true
+    }
 
-	// simulator metadata
-	simulator {
-	}
+    // simulator metadata
+    simulator {
+    }
 
-	// UI tile definitions
-	tiles(scale:2) {
-		multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
+    // UI tile definitions
+    tiles(scale:2) {
+        multiAttributeTile(name:"switch", type: "lighting", width: 6, height: 4, canChangeIcon: true){
             tileAttribute ("device.switch", key: "PRIMARY_CONTROL") {
                 attributeState "on", label:'${name}', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#79b821", nextState:"turningOff"
                 attributeState "off", label:'${name}', action:"switch.on", icon:"st.switches.light.off", backgroundColor:"#ffffff", nextState:"turningOn"
                 attributeState "turningOn", label:'${name}', action:"switch.off", icon:"st.switches.light.on", backgroundColor:"#79b821", nextState:"turningOff"
                 attributeState "turningOff", label:'${name}', action:"switch.on", icon:"st.switches.light.off", backgroundColor:"#ffffff", nextState:"turningOn"
             }
-			tileAttribute ("device.level", key: "SLIDER_CONTROL") {
+            tileAttribute ("device.level", key: "SLIDER_CONTROL") {
                 attributeState "level", action:"switch level.setLevel"
             }
-		}
-		standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
-			state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
-		}
+        }
+        standardTile("refresh", "device.switch", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+            state "default", label:'', action:"refresh.refresh", icon:"st.secondary.refresh"
+        }
         valueTile("lValue", "device.level", inactiveLabel: true, width: 2, height: 2, decoration: "flat") {
             state "levelValue", label:'${currentValue}%', unit:"", backgroundColor: "#53a7c0"
         }
-		controlTile("colorTempSliderControl", "device.colorTemperature", "slider", width: 4, height: 2, inactiveLabel: false, range:"(2700..6500)") {
+        controlTile("colorTempSliderControl", "device.colorTemperature", "slider", width: 4, height: 2, inactiveLabel: false, range:"(2700..6500)") {
             state "colorTemperature", action:"color temperature.setColorTemperature"
         }
         valueTile("colorTemp", "device.colorTemperature", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "colorTemperature", label: '${currentValue} K',
             backgroundColors: lightColorRange
         }
-		valueTile("colorName", "device.colorName", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
+        valueTile("colorName", "device.colorName", inactiveLabel: false, decoration: "flat", width: 2, height: 2) {
             state "default", label:'${currentValue}',
             backgroundColors: lightColorRange
         }
 
-		main(["switch"])
-		details(["switch", "colorTempSliderControl", "colorTemp", "colorName", "refresh","lValue"])
-	}
+        main(["switch"])
+        details(["switch", "colorTempSliderControl", "colorTemp", "colorName", "refresh","lValue"])
+    }
 }
 
 def parse(String description) {
 }
 
 def on() {
-	sendEvent(name: "switch", value: "on")
- 	sendEvent(name: "level", value: 100)
-    log.info "Dimmer On"
+    log.info("Turning Switch On");
+    sendEvent(name: "switch", value: "on")
+    
+    //See if we are suppose to remember state and we have a value
+    if(settings.doesRememberState && state.dimmer){
+        log.info("Dimmer Remembers State of ${state.dimmer}")
+        sendEvent(name: "level", value: state.dimmer)
+    } else {    
+    	log.debug("Setting to default brightness of 100")
+        sendEvent(name: "level", value: 100)
+    }
+    
+    state.isOn = true
+    log.info "Switch On"
 }
 
 def off() {
-	sendEvent(name: "switch", value: "off")
- 	sendEvent(name: "level", value: 0)
-    log.info "Dimmer Off"
+    log.info("Turning Switch Off");
+    sendEvent(name: "switch", value: "off")
+    sendEvent(name: "level", value: 0)
+    state.isOn = false
+    log.info "Switch Off"
 }
 
 def setLevel(val){
     log.info "setLevel $val"
     
-    if (val < 0) val = 0
-    else if( val > 100) val = 100
+    if (val < 0){
+        log.debug("Dimmer is Less Than 0: ${val}");
+        val = 0
+    }
+    else if( val > 100){ 
+        log.debug("Dimmer is greater than 100: ${val}");
+        val = 100
+    }
     
-    if(val == 0) off() else {
- 	on()
+    if(val == 0) { 
+        off()
+    } else {
+        if(!state.isOn){
+            log.info("Switch is off, but brightness is being changed, turn it on.")
+            on()
+        }
  	sendEvent(name: "level", value: val)
+    }
+    
+    //Something changed, remember level.
+    if(settings.doesRememberState && val && val > 0){
+        log.debug("Saved Dimmer Level: ${val}")
+        state.dimmer = val;
     }
 }
 
 def refresh() {
     log.info "refresh"
+    state.dimmer=0
+    state.isOn=false
 }
 
 //range 2700k - 6500k
 def setColorTemperature(value) {
     log.debug ("Color Temp: ${value}")
 	
-	//Fix bug in SM
-	if( 0 <= value && value <= 100)
-	{
-		log.trace("Adjust values to smartthings bug")
-		//Let's do some basic math.
-		def difference = 3800;
-		def percentatage = value/100;
-		value = (difference * percentatage) + 2700;
+    //Fix bug in SM
+    if( 0 <= value && value <= 100)
+    {
+        log.trace("Adjust values to smartthings bug")
+        //Let's do some basic math.
+        def difference = 3800;
+        def percentatage = value/100;
+        value = (difference * percentatage) + 2700;
         //convert back to int
         value = value.toInteger()
         log.trace("Bug Adjustment: ${value}")
-	}
+    }
     
-	//Ensure not out of range occurs
-	if (value < 2700){ 
+    //Ensure not out of range occurs
+    if (value < 2700){ 
     	log.trace("Value out of range, to low. ${value}");
     	value = 2700
     }
@@ -134,7 +171,7 @@ def setColorTemperature(value) {
     log.debug ("Adjusted Color Temp: ${value}")
     
     setGenericName(value)
-	sendEvent(name: "colorTemperature", value: value)
+    sendEvent(name: "colorTemperature", value: value)
 }
 
 //Naming based on the wiki article here: http://en.wikipedia.org/wiki/Color_temperature
