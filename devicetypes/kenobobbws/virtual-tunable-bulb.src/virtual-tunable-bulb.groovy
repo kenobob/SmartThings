@@ -35,7 +35,14 @@ metadata {
     }
     
     preferences {
-        input "doesRememberState", "bool", title: "Remeber Previous State", required: false, defaultValue: true
+        section("Remember"){
+            paragraph("Remember where you left off. So when you turn it back on, it's right there. Similar to how most smart bulbs work.")
+            input "doesRememberState", "bool", title: "Remeber Previous State", required: true, defaultValue: true
+        }
+        section("Default Values"){
+            paragraph "This May not Function as expected when the Remember Feature is enabled."
+            input "defaultOnDimmer", "number", title: "Default On Dimmer", required: true, defaultValue: 100        
+        }
     }
 
     // simulator metadata
@@ -90,8 +97,8 @@ def on() {
         log.info("Dimmer Remembers State of ${state.dimmer}")
         sendEvent(name: "level", value: state.dimmer)
     } else {    
-    	log.debug("Setting to default brightness of 100")
-        sendEvent(name: "level", value: 100)
+    	log.debug("Setting to default brightness of ${settings.defaultOnDimmer}")
+        sendEvent(name: "level", value: settings.defaultOnDimmer)
     }
     
     state.isOn = true
