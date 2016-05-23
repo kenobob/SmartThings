@@ -43,6 +43,9 @@ metadata {
             paragraph "This May not Function as expected when the Remember Feature is enabled."
             input "defaultOnDimmer", "number", title: "Default On Dimmer", required: true, defaultValue: 100        
         }
+        section("On Off Dimmer"){
+            input "doesSendDimmerWithSwitch", "bool", title: "Send Dimmer Level with On/Off commands?", required: true, defaultValue: true
+        }
     }
 
     // simulator metadata
@@ -92,13 +95,15 @@ def on() {
     log.info("Turning Switch On");
     sendEvent(name: "switch", value: "on")
     
-    //See if we are suppose to remember state and we have a value
-    if(settings.doesRememberState && state.dimmer){
-        log.info("Dimmer Remembers State of ${state.dimmer}")
-        sendEvent(name: "level", value: state.dimmer)
-    } else {    
-    	log.debug("Setting to default brightness of ${settings.defaultOnDimmer}")
-        sendEvent(name: "level", value: settings.defaultOnDimmer)
+    if(settings.doesSendDimmerWithSwitch){
+        //See if we are suppose to remember state and we have a value
+        if(settings.doesRememberState && state.dimmer){
+            log.info("Dimmer Remembers State of ${state.dimmer}")
+            sendEvent(name: "level", value: state.dimmer)
+        } else {    
+            log.debug("Setting to default brightness of ${settings.defaultOnDimmer}")
+            sendEvent(name: "level", value: settings.defaultOnDimmer)
+        }
     }
     
     state.isOn = true
@@ -108,7 +113,11 @@ def on() {
 def off() {
     log.info("Turning Switch Off");
     sendEvent(name: "switch", value: "off")
-    sendEvent(name: "level", value: 0)
+    
+    if(settings.doesSendDimmerWithSwitch){
+        sendEvent(name: "level", value: 0)
+    }
+    
     state.isOn = false
     log.info "Switch Off"
 }
