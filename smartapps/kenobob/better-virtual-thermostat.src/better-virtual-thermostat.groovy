@@ -5,6 +5,7 @@ Made Mode's Dynamic, default to 3, but could add more
 Window Sensors
 Outside Temperature
 Forecast
+Disable Switch/Modes/andor setting
 *
 */
 definition(
@@ -65,7 +66,7 @@ preferences {
     }
     page(name: "sensorsPage", title:"Sensors", nextPage: "switchesPage") {
         section(){
-            paragraph "Let's tell the virtual thermostat what sensors to use."
+            paragraph "Let's tell the virtual thermostat what sensors to use. We will average the temperature between these sensors to do our calculations"
             input "temperatureSensors", "capability.temperatureMeasurement", title: "Get temperature readings from these sensors", multiple: true, required: true
             input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Get humidity readings from these sensors", multiple: true, required: false
         }
@@ -73,8 +74,8 @@ preferences {
     page(name: "switchesPage", title:"Switches", nextPage: "SmartThingsPage") {
         section(){
             paragraph "Let's tell the virtual thermostat what outlets to use."
-            input "coolOutlets", "capability.switch", title: "Control these switches when cooling", multiple: true
-            input "heatOutlets", "capability.switch", title: "Control these switches when heating ", multiple: true
+            input "coolOutlets", "capability.switch", title: "Control these switches when cooling", multiple: true, required: false
+            input "heatOutlets", "capability.switch", title: "Control these switches when heating ", multiple: true, required: false
         }
     }
     page(name: "SmartThingsPage", title: "Name app and configure modes", install: true, uninstall: true) {
