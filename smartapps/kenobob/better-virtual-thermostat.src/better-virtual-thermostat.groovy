@@ -1,7 +1,7 @@
 /**
 *  Virtual Thermostat
 * TODO: 
-Made Mode's Dynamic, default to 3, but could add more
+Make Mode's Dynamic, default to 3, but could add more
 Window Sensors
 Outside Temperature
 Forecast
@@ -88,39 +88,49 @@ preferences {
 
 def installed()
 {
-    log.debug "Installed with settings: ${settings}"
+    log.debug("Installed with settings: ${settings}")
     initialize()
 }
 
 def updated()
 {
-    log.debug "Updated with settings: ${settings}"
+    log.debug("Updated with settings: ${settings}")
     unsubscribe()
     initialize()
 }
 
 def initialize()
 {
+	//Subscribe to Sensor Changes
     for (sensor in temperatureSensors)
+	{
         subscribe(sensor, "temperature", evtHandler)
+	}
     for (sensor in humiditySensors)
+	{
         subscribe(sensor, "humidity", evtHandler)
+	}
+	
+	//Subscribe to mode changing
     subscribe(location, changedLocationMode)
+	
+	//Subscribe to Smart App changes
     subscribe(app, appTouch)
     
     def temp = getReadings("temperature")
-    log.debug "Temp: $temp"
+    log.debug("Temp: $temp")
 
     def humidity = getReadings("humidity")
-    log.debug "Humidity: $humidity"   
+    log.debug("Humidity: $humidity")
 
     def feelsLike = getFeelsLike(temp, humidity)
-    log.debug "Feels Like: $feelsLike"       
+    log.debug("Feels Like: $feelsLike")
 	
     //Keeps track of whether or not the outlets are turned on by the app. This is to 
     //prevent sending too many commands if it is taking awhile to cool or heat. Note: If  
     //the user manually  changes the state of an outlet, it will stay in that state until 
     //the threshold is triggered again.
+	//TODO: Need to make this user configurable to capture outlet state-change for this
 	state.outlets = ""
     
     setSetpoint(feelsLike)
@@ -134,7 +144,9 @@ def double getReadings(type)
     
     def sensors = temperatureSensors
     if (type == "humidity")
+	{
         sensors = humiditySensors
+	}
 
     for (sensor in sensors)
     {
@@ -163,12 +175,18 @@ def double getFeelsLike(t,h)
         log.debug("Feels Like Calc: $feelsLike")
         //Formula is an approximation. Use the warmer temperature.
         if (feelsLike > t)
+		{
             return feelsLike
+		}
         else
+		{
             return t
+		}
     }
     else
+	{
         return t
+	}
 }
 
 //Function setSetpoint: Determines the setpoints based on mode
@@ -196,13 +214,13 @@ def setSetpoint(temp)
 def evtHandler(evt)
 {
     def temp = getReadings("temperature")
-    log.info "Temp: $temp"
+    log.info ("Temp: $temp")
 
     def humidity = getReadings("humidity")
-    log.info "Humidity: $humidity"
+    log.info("Humidity: $humidity")
 
     def feelsLike = getFeelsLike(temp, humidity)
-    log.info "Feels Like: $feelsLike"
+    log.info("Feels Like: $feelsLike")
 
     setSetpoint(feelsLike)
 }
@@ -210,14 +228,14 @@ def evtHandler(evt)
 //Function changedLocationMode: Event handler when mode is changed
 def changedLocationMode(evt)
 {
-    log.info "changedLocationMode: $evt, $settings"
+    log.info("changedLocationMode: $evt, $settings")
     evtHandler(evt)
 }
 
 //Function appTouch: Event handler when SmartApp is touched
 def appTouch(evt)
 {
-    log.info "appTouch: $evt, $lastTemp, $settings"
+    log.info("appTouch: $evt, $lastTemp, $settings")
     evtHandler(evt)
 }
 
@@ -230,12 +248,12 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
         if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on") {
             coolOutlets.on()
             state.outlets = "on"
-            log.debug "Need to cool: Turning outlets on"
+            log.debug("Need to cool: Turning outlets on")
         }
         else if (desiredCoolTemp - currentTemp >= offThreshold && state.outlets != "off") {
             coolOutlets.off()
             state.outlets = "off"
-            log.debug "Done cooling: Turning outlets off"
+            log.debug("Done cooling: Turning outlets off")
         }
     }
     else {
@@ -243,12 +261,12 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
         if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on") {
             heatOutlets.on()
             state.outlets = "on"
-            log.debug "Need to heat: Turning outlets on"
+            log.debug("Need to heat: Turning outlets on")
         }
         else if (currentTemp - desiredHeatTemp >= offThreshold && state.outlets != "off") {
             heatOutlets.off()
             state.outlets = "off"
-            log.debug "Done heating: Turning outlets off"
+            log.debug("Done heating: Turning outlets off")
         }
     }
 }
@@ -256,5 +274,5 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 // Event catchall
 def event(evt)
 {
-    log.info "value: $evt.value, event: $evt, settings: $settings, handlerName: ${evt.handlerName}"
+    log.info("value: $evt.value, event: $evt, settings: $settings, handlerName: ${evt.handlerName}")
 }
