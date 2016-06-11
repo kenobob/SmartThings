@@ -140,6 +140,7 @@ def double getReadings(type)
         if (sensor.latestValue(type) != null)
         {
             currentReadings = currentReadings + sensor.latestValue(type)
+			log.debug("${type} Sensor Readings: ${sensor.latestValue(type)}")
             numSensors = numSensors + 1
         }
     }
