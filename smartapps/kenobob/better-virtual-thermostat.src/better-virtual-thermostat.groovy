@@ -8,11 +8,11 @@ Forecast
 *
 */
 definition(
-    name: "Better Virtual Thermostat - Nest without a Nest",
+    name: "Better Virtual Thermostat",
     namespace: "kenobob",
     author: "kenobob",
     description: "A virtual thermostat for homes not compatible with Nest. Get enhanced control over your heating and cooling devices with temperature readings from multiple sensors, mode-based thermostat settings, and if you have a humidity sensor, feels-like temperatures, windows and other smart features. Based on the original Virtual Thermostat, Green Thermostat, and Anmnguyen's apps.",
-    category: "Green Living",
+    category: "My Apps",
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Meta/temp_thermo-switch@2x.png"
 )
