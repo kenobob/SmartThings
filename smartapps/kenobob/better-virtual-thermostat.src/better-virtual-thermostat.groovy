@@ -6,7 +6,7 @@ Window Sensors & Open Time Before Turning off?
 Outside Temperature
 Forecast
 Disable Switch/Modes/andor setting
-
+Primary Sensor For Temp & All Sensors no greater than...
 *
 */
 definition(
@@ -219,11 +219,11 @@ def setSetpoint(temp)
     }
     if (rtvHomeNightModes) {
 		log.info("Home Night Mode for Virtual Thermostat")
-        evaluate(temp, awayHeat, awayCool)
+        evaluate(temp, nightHeat, nightCool)
     }
     if (rtvAwayModes) {
 		log.info("Away Mode for Virtual Thermostat")
-        evaluate(temp, nightHeat, nightCool)
+        evaluate(temp, awayHeat, awayCool)
     }
 }
 
