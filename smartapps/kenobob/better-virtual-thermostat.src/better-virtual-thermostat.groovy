@@ -29,13 +29,13 @@ preferences {
             paragraph "Let's tell the virtual thermostat about your desired temperatures."
         }
 		section("Home Day Modes"){
-				input "homeDayModes", "mode", title: "select a mode(s)", multiple: true
+				input "homeDayModes", "mode", title: "select a home day mode(s)", multiple: true
 		}
 		section("Home Night Modes"){
-				input "homeNightModes", "mode", title: "select a mode(s)", multiple: true
+				input "homeNightModes", "mode", title: "select a home night mode(s)", multiple: true
 		}
 		section("Away Modes"){
-				input "awayModes", "mode", title: "select a mode(s)", multiple: true
+				input "awayModes", "mode", title: "select a away mode(s)", multiple: true
 		}
         section("When home during the day,") {
                 input "homeHeat",  "decimal", title:"Set heating temperature to (ex. 72)", required:true
