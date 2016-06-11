@@ -2,10 +2,11 @@
 *  Virtual Thermostat
 * TODO: 
 Make Mode's Dynamic, default to 3, but could add more
-Window Sensors
+Window Sensors & Open Time Before Turning off?
 Outside Temperature
 Forecast
 Disable Switch/Modes/andor setting
+
 *
 */
 definition(
@@ -64,11 +65,18 @@ preferences {
             input "offThreshold", "decimal", title: "Turn off when temperature reaches & goes this far beyond setpoint", required: true
         }
     }
-    page(name: "sensorsPage", title:"Sensors", nextPage: "switchesPage") {
+    page(name: "sensorsPage", title:"Sensors", nextPage: "windowsPage") {
         section(){
             paragraph "Let's tell the virtual thermostat what sensors to use. We will average the temperature between these sensors to do our calculations"
             input "temperatureSensors", "capability.temperatureMeasurement", title: "Get temperature readings from these sensors", multiple: true, required: true
             input "humiditySensors", "capability.relativeHumidityMeasurement", title: "Get humidity readings from these sensors", multiple: true, required: false
+        }
+    }
+    page(name: "windowsPage", title:"Windows", nextPage: "switchesPage") {
+        section(){
+            paragraph "Select Window Sensors that when opened should turn off your devices.."
+            input "coolWindows", "capability.contactSensor", title: "Turn-off Devices When cooling", multiple: true, required: false
+            input "heatWindows", "capability.contactSensor", title: "Turn-off Devices When heating ", multiple: true, required: false
         }
     }
     page(name: "switchesPage", title:"Switches", nextPage: "SmartThingsPage") {
@@ -109,6 +117,15 @@ def initialize()
     for (sensor in humiditySensors)
 	{
         subscribe(sensor, "humidity", evtHandler)
+	}
+	for (sensor in coolWindows)
+	{
+		log.debug("Subscribing Windows")
+        subscribe(sensor, "contact", evtHandler)
+	}
+	for (sensor in heatWindows)
+	{
+        subscribe(sensor, "contact", evtHandler)
 	}
 	
 	//Subscribe to mode changing
@@ -242,10 +259,21 @@ def appTouch(evt)
 //Function evaluation: Evaluates temperature and control outlets
 private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 {
-    log.debug "Evaluating temperature ($currentTemp, $desiredHeatTemp, $desiredCoolTemp, $mode)"
+    log.debug ("Evaluating temperature ($currentTemp, $desiredHeatTemp, $desiredCoolTemp, $mode)")
+	
+	def isWindowOpen = false
+		
     if (mode == "Cooling") {
         // Cooling
-        if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on") {
+		isWindowOpen = coolWindows.currentContact.find{it == "open"} ? true : false
+		log.info("Windows Open: ${isWindowOpen}")
+		
+		if(isWindowOpen && state.outlets != "off"){
+			//Windows Opened Up, turn off
+            coolOutlets.off()
+            state.outlets = "off"
+            log.debug("Window Open: Turning outlets off")
+		}else if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on") {
             coolOutlets.on()
             state.outlets = "on"
             log.debug("Need to cool: Turning outlets on")
@@ -258,7 +286,16 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
     }
     else {
         // Heating
-        if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on") {
+        
+		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false
+		log.info("Windows Open: ${isWindowOpen}")
+		
+		if(isWindowOpen && state.outlets != "off"){
+			//Windows Opened Up, turn off
+            coolOutlets.off()
+            state.outlets = "off"
+            log.debug("Window Open: Turning outlets off")
+		}else if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on") {
             heatOutlets.on()
             state.outlets = "on"
             log.debug("Need to heat: Turning outlets on")
