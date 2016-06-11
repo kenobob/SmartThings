@@ -1,10 +1,14 @@
 /**
 *  Virtual Thermostat
-*
+* TODO: 
+Made Mode's Dynamic, default to 3, but could add more
+Window Sensors
+Outside Temperature
+Forecast
 *
 */
 definition(
-    name: "Virtual Thermostat - Nest without a Nest",
+    name: "Better Virtual Thermostat - Nest without a Nest",
     namespace: "kenobob",
     author: "kenobob",
     description: "A virtual thermostat for homes not compatible with Nest. Get enhanced control over your heating and cooling devices with temperature readings from multiple sensors, mode-based thermostat settings, and if you have a humidity sensor, feels-like temperatures, windows and other smart features. Based on the original Virtual Thermostat, Green Thermostat, and Anmnguyen's apps.",
@@ -24,6 +28,15 @@ preferences {
         section () {
             paragraph "Let's tell the virtual thermostat about your desired temperatures."
         }
+		section("Home Day Modes"){
+				input "homeDayModes", "mode", title: "select a mode(s)", multiple: true
+		}
+		section("Home Night Modes"){
+				input "homeNightModes", "mode", title: "select a mode(s)", multiple: true
+		}
+		section("Away Modes"){
+				input "awayModes", "mode", title: "select a mode(s)", multiple: true
+		}
         section("When home during the day,") {
                 input "homeHeat",  "decimal", title:"Set heating temperature to (ex. 72)", required:true
                 input "homeCool",  "decimal", title:"Set cooling temperature to (ex. 76)", required:true
@@ -159,13 +172,20 @@ def double getFeelsLike(t,h)
 //Function setSetpoint: Determines the setpoints based on mode
 def setSetpoint(temp)
 {
-    if (location.mode == "Home" ) {
+	def rtvHomeDayModes = homeDayModes.findAll{ mde -> mde==location.mode }
+	def rtvHomeNightModes = homeNightModes.findAll{ mde -> mde==location.mode }
+	def rtvAwayModes = awayModes.findAll{ mde -> mde==location.mode }
+	
+    if (rtvHomeDayModes) {
+		log.info("Home Day Mode for Virtual Thermostat")
         evaluate(temp, homeHeat, homeCool)
     }
-    if (location.mode == "Away" ) {
+    if (rtvHomeNightModes) {
+		log.info("Home Night Mode for Virtual Thermostat")
         evaluate(temp, awayHeat, awayCool)
     }
-    if (location.mode == "Night" ) {
+    if (rtvAwayModes) {
+		log.info("Away Mode for Virtual Thermostat")
         evaluate(temp, nightHeat, nightCool)
     }
 }
