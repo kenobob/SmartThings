@@ -1,12 +1,15 @@
 /**
 *  Virtual Thermostat
 * TODO: 
+Fix Over Evaluating from certain triggers
+Fix to Pull from real switch(s) state instead of assumed state
 Make Mode's Dynamic, default to 3, but could add more
 Window Sensors & Open Time Before Turning off?
 Outside Temperature
 Forecast
 Disable Switch/Modes/andor setting
 Primary Sensor For Temp & All Sensors no greater than...
+Learning - Schedule when coming home, etc
 *
 */
 definition(
@@ -129,7 +132,7 @@ def initialize()
 	}
 	
 	//Subscribe to mode changing
-    subscribe(location, changedLocationMode)
+	subscribe(location, "mode", modeChangeHandler)
 	
 	//Subscribe to Smart App changes
     subscribe(app, appTouch)
@@ -230,6 +233,7 @@ def setSetpoint(temp)
 //Function evtHandler: Main event handler
 def evtHandler(evt)
 {
+	log.debug("Event: ${evt}")
     def temp = getReadings("temperature")
     log.info ("Temp: $temp")
 
@@ -242,10 +246,10 @@ def evtHandler(evt)
     setSetpoint(feelsLike)
 }
 
-//Function changedLocationMode: Event handler when mode is changed
-def changedLocationMode(evt)
+//Function modeChangeHandler: Event handler when mode is changed
+def modeChangeHandler(evt)
 {
-    log.info("changedLocationMode: $evt, $settings")
+    log.info("modeChangeHandler: $evt, $settings")
     evtHandler(evt)
 }
 
@@ -268,11 +272,15 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 		isWindowOpen = coolWindows.currentContact.find{it == "open"} ? true : false
 		log.info("Windows Open: ${isWindowOpen}")
 		
-		if(isWindowOpen && state.outlets != "off"){
+		if(isWindowOpen){
 			//Windows Opened Up, turn off
-            coolOutlets.off()
-            state.outlets = "off"
-            log.debug("Window Open: Turning outlets off")
+			if(state.outlets != "off"){
+				coolOutlets.off()
+				state.outlets = "off"
+				log.debug("Window Open: Turning outlets off")
+			} else {
+				log.debug("Window Open: No need to change outlet state")
+			}
 		}else if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on") {
             coolOutlets.on()
             state.outlets = "on"
@@ -290,11 +298,15 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false
 		log.info("Windows Open: ${isWindowOpen}")
 		
-		if(isWindowOpen && state.outlets != "off"){
+		if(isWindowOpen){
 			//Windows Opened Up, turn off
-            coolOutlets.off()
-            state.outlets = "off"
-            log.debug("Window Open: Turning outlets off")
+			if(state.outlets != "off"){
+				heatOutlets.off()
+				state.outlets = "off"
+				log.debug("Window Open: Turning outlets off")
+			} else {
+				log.debug("Window Open: No need to change outlet state")
+			}
 		}else if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on") {
             heatOutlets.on()
             state.outlets = "on"
