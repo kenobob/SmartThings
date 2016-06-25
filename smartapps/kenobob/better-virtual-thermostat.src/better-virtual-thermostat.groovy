@@ -249,8 +249,6 @@ def contactChangeEventHandler(evt)
 		scheduleRunIn()
 	} 
 	else if(state.waitingForWindowDelayTime && !isWindowOpen){
-		//no longer need to wait... reset state so new event will start time over
-		state.waitingForWindowDelayTime = false;
 		log.debug("Waiting for delay time, but the window isn't open")
 	}else if(!state.waitingForWindowDelayTime && !isWindowOpen){
 		scheduleRunIn()
