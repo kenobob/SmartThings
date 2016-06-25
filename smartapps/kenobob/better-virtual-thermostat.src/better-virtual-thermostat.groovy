@@ -80,6 +80,7 @@ preferences {
             paragraph "Select Window Sensors that when opened should turn off your devices.."
             input "coolWindows", "capability.contactSensor", title: "Turn-off Devices When cooling", multiple: true, required: false
             input "heatWindows", "capability.contactSensor", title: "Turn-off Devices When heating ", multiple: true, required: false
+			input "windowDelaySeconds", "number", title:"Seconds of Delay to evaluate and Shut off Devices", defaultValue: 30, required: true
         }
     }
     page(name: "switchesPage", title:"Switches", nextPage: "SmartThingsPage") {
@@ -241,24 +242,44 @@ def contactChangeEventHandler(evt)
 		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false
 	}
 	
+	log.debug("Window Open: ${isWindowOpen}")
+	
 	if(!state.waitingForWindowDelayTime && isWindowOpen){
 		//kick off window wait time
-		if(canSchedule()){
-			runIn(15,contactChangeAfterWait, [overwrite: true]);
-		} else {
-			log.error("Cannot schedule anymore events.");
-			contactChangeAfterWait(evt);
-		}
+		scheduleRunIn()
 	} 
 	else if(state.waitingForWindowDelayTime && !isWindowOpen){
 		//no longer need to wait... reset state so new event will start time over
 		state.waitingForWindowDelayTime = false;
+		log.debug("Waiting for delay time, but the window isn't open")
+	}else if(!state.waitingForWindowDelayTime && !isWindowOpen){
+		scheduleRunIn()
+		log.debug("Not currently waiting for assessment, and window closed")
+	} else if(state.waitingForWindowDelayTime && isWindowOpen){
+		log.debug("Waiting for delay time, and the window is open")
+	}else{
+		log.error("Missed something")
 	}
 	
 }
 
+private def scheduleRunIn(){
+	if(canSchedule()){
+		try{
+			state.waitingForWindowDelayTime = true
+			runIn(windowDelaySeconds, contactChangeAfterWait, [overwrite: true])
+			log.debug("Creating runIN event for ${windowDelaySeconds} seconds")
+		}catch(all){
+			log.error(all)
+		}
+	} else {
+		log.error("Cannot schedule anymore events.");
+		contactChangeAfterWait(evt);
+	}
+}
+
 def contactChangeAfterWait(evt){
-	log.debug("Evaluating Window State After Delay")
+	log.debug("*****Evaluating Window State After Delay****")
 	def isWindowOpen = false;
 	if (mode == "Cooling") {
         // Cooling
