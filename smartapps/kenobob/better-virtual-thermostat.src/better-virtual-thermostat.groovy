@@ -124,11 +124,11 @@ def initialize()
 	for (sensor in coolWindows)
 	{
 		log.debug("Subscribing Windows")
-        subscribe(sensor, "contact", evtHandler)
+        subscribe(sensor, "contact", contactChangeEventHandler)
 	}
 	for (sensor in heatWindows)
 	{
-        subscribe(sensor, "contact", evtHandler)
+        subscribe(sensor, "contact", contactChangeEventHandler)
 	}
 	
 	//Subscribe to mode changing
@@ -230,6 +230,61 @@ def setSetpoint(temp)
     }
 }
 
+def contactChangeEventHandler(evt)
+{
+	log.debug("Contact Sensor Event")
+	def isWindowOpen = false;
+	
+    if (mode == "Cooling") {
+		isWindowOpen = coolWindows.currentContact.find{it == "open"} ? true : false
+	} else {
+		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false
+	}
+	
+	if(!state.waitingForWindowDelayTime && isWindowOpen){
+		//kick off window wait time
+		if(canSchedule()){
+			runIn(15,contactChangeAfterWait, [overwrite: true]);
+		} else {
+			log.error("Cannot schedule anymore events.");
+			contactChangeAfterWait(evt);
+		}
+	} 
+	else if(state.waitingForWindowDelayTime && !isWindowOpen){
+		//no longer need to wait... reset state so new event will start time over
+		state.waitingForWindowDelayTime = false;
+	}
+	
+}
+
+def contactChangeAfterWait(evt){
+	log.debug("Evaluating Window State After Delay")
+	def isWindowOpen = false;
+	if (mode == "Cooling") {
+        // Cooling
+		isWindowOpen = coolWindows.currentContact.find{it == "open"} ? true : false
+    }
+    else {
+        // Heating
+		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false		
+    }
+	log.info("Windows Open: ${isWindowOpen}")
+		
+	if(isWindowOpen){
+		//Windows Opened Up, turn off
+		state.offForWindows = true
+		log.debug("Window Opened, turning off")
+	} else {
+		state.offForWindows = false
+	}
+	
+	//No longer waiting for this even to fire :)
+	state.waitingForWindowDelayTime = false;
+	
+	//Send to standard event handler
+	evtHandler("Window State Change Timer Event")
+}
+
 //Function evtHandler: Main event handler
 def evtHandler(evt)
 {
@@ -265,14 +320,10 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 {
     log.debug ("Evaluating temperature ($currentTemp, $desiredHeatTemp, $desiredCoolTemp, $mode)")
 	
-	def isWindowOpen = false
 		
     if (mode == "Cooling") {
         // Cooling
-		isWindowOpen = coolWindows.currentContact.find{it == "open"} ? true : false
-		log.info("Windows Open: ${isWindowOpen}")
-		
-		if(isWindowOpen){
+		if(state.offForWindows){
 			//Windows Opened Up, turn off
 			if(state.outlets != "off"){
 				coolOutlets.off()
@@ -280,8 +331,8 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 				log.debug("Window Open: Turning outlets off")
 			} else {
 				log.debug("Window Open: No need to change outlet state")
-			}
-		}else if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on") {
+			}			
+		}else if (currentTemp - desiredCoolTemp >= onThreshold && state.outlets != "on" && !state.offForWindows) {
             coolOutlets.on()
             state.outlets = "on"
             log.debug("Need to cool: Turning outlets on")
@@ -294,11 +345,7 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
     }
     else {
         // Heating
-        
-		isWindowOpen = heatWindows.currentContact.find{it == "open"} ? true : false
-		log.info("Windows Open: ${isWindowOpen}")
-		
-		if(isWindowOpen){
+		if(state.offForWindows){
 			//Windows Opened Up, turn off
 			if(state.outlets != "off"){
 				heatOutlets.off()
@@ -306,8 +353,8 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
 				log.debug("Window Open: Turning outlets off")
 			} else {
 				log.debug("Window Open: No need to change outlet state")
-			}
-		}else if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on") {
+			}			
+		}else if (desiredHeatTemp - currentTemp >= onThreshold && state.outlets != "on" && !state.offForWindows) {
             heatOutlets.on()
             state.outlets = "on"
             log.debug("Need to heat: Turning outlets on")
