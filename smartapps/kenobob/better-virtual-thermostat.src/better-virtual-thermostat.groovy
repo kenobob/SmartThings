@@ -386,7 +386,9 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
             coolOutlets.off()
             state.outlets = "off"
             log.debug("Done cooling: Turning outlets off")
-        }
+        } else {
+			log.info("No Change. Current Temp ${currentTemp}, Desired Temp: ${desiredCoolTemp}, outlet state ${state.outlets}")
+		}
     }
     else {
         // Heating
@@ -408,7 +410,9 @@ private evaluate(currentTemp, desiredHeatTemp, desiredCoolTemp)
             heatOutlets.off()
             state.outlets = "off"
             log.debug("Done heating: Turning outlets off")
-        }
+        } else {
+			log.info("No Change. Current Temp ${currentTemp}, Desired Temp: ${desiredCoolTemp}, outlet state ${state.outlets}")
+		}
     }
 }
 
