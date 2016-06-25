@@ -100,19 +100,24 @@ preferences {
 
 def installed()
 {
+    log.trace("Executing 'installed'")
     log.debug("Installed with settings: ${settings}")
     initialize()
+    log.trace("End Executing 'installed'")
 }
 
 def updated()
 {
+    log.trace("Executing 'updated'")
     log.debug("Updated with settings: ${settings}")
     unsubscribe()
     initialize()
+    log.trace("End Executing 'updated'")
 }
 
 def initialize()
 {
+    log.trace("Executing 'initialize'")
 	//Subscribe to Sensor Changes
     for (sensor in temperatureSensors)
 	{
@@ -155,11 +160,14 @@ def initialize()
 	state.outlets = ""
     
     setSetpoint(feelsLike)
+	
+    log.trace("End Executing 'initialize'")
 }
 
 //Function getReadings: Gets readings from sensors and averages
 def double getReadings(type)
 {
+    log.trace("Executing 'getReadings'")
     def currentReadings = 0
     def numSensors = 0
     
@@ -184,12 +192,14 @@ def double getReadings(type)
         currentReadings = currentReadings / numSensors
     }
     
+    log.trace("End Executing 'getReadings'")
     return currentReadings
 }
 
 //Function getFeelsLike: Calculates feels-like temperature based on Wikipedia formula
 def double getFeelsLike(t,h)
 {
+    log.trace("Executing 'getFeelsLike'")
     //Formula is derived from NOAA table for temperatures above 70F. Only use the formula when temperature is at least 70F and humidity is greater than zero (same as at least one humidity sensor selected)
     if (t >=70 && h > 0) {
         def feelsLike = 0.363445176 + 0.988622465*t + 4.777114035*h -0.114037667*t*h - 0.000850208*t**2 - 0.020716198*h**2 + 0.000687678*t**2*h + 0.000274954*t*h**2
@@ -213,6 +223,7 @@ def double getFeelsLike(t,h)
 //Function setSetpoint: Determines the setpoints based on mode
 def setSetpoint(temp)
 {
+    log.trace("Executing 'setSetpoint'")
 	def rtvHomeDayModes = homeDayModes.findAll{ mde -> mde==location.mode }
 	def rtvHomeNightModes = homeNightModes.findAll{ mde -> mde==location.mode }
 	def rtvAwayModes = awayModes.findAll{ mde -> mde==location.mode }
@@ -229,11 +240,13 @@ def setSetpoint(temp)
 		log.info("Away Mode for Virtual Thermostat")
         evaluate(temp, awayHeat, awayCool)
     }
+	
+    log.trace("End Executing 'setSetpoint'")
 }
 
 def contactChangeEventHandler(evt)
 {
-	log.debug("Contact Sensor Event")
+    log.trace("Executing 'contactChangeEventHandler'")
 	def isWindowOpen = false;
 	
     if (mode == "Cooling") {
@@ -259,9 +272,11 @@ def contactChangeEventHandler(evt)
 		log.error("Missed something")
 	}
 	
+    log.trace("End Executing 'contactChangeEventHandler'")
 }
 
 private def scheduleRunIn(){
+    log.trace("Executing 'scheduleRunIn'")
 	if(canSchedule()){
 		try{
 			state.waitingForWindowDelayTime = true
@@ -274,9 +289,11 @@ private def scheduleRunIn(){
 		log.error("Cannot schedule anymore events.");
 		contactChangeAfterWait(evt);
 	}
+    log.trace("End Executing 'scheduleRunIn'")
 }
 
 def contactChangeAfterWait(evt){
+    log.trace("Executing 'contactChangeAfterWait'")
 	log.debug("*****Evaluating Window State After Delay****")
 	def isWindowOpen = false;
 	if (mode == "Cooling") {
@@ -302,11 +319,13 @@ def contactChangeAfterWait(evt){
 	
 	//Send to standard event handler
 	evtHandler("Window State Change Timer Event")
+    log.trace("End Executing 'contactChangeAfterWait'")
 }
 
 //Function evtHandler: Main event handler
 def evtHandler(evt)
 {
+    log.trace("Executing 'evtHandler'")
 	log.debug("Event: ${evt}")
     def temp = getReadings("temperature")
     log.info ("Temp: $temp")
@@ -318,20 +337,25 @@ def evtHandler(evt)
     log.info("Feels Like: $feelsLike")
 
     setSetpoint(feelsLike)
+    log.trace("End Executing 'evtHandler'")
 }
 
 //Function modeChangeHandler: Event handler when mode is changed
 def modeChangeHandler(evt)
 {
+    log.trace("Executing 'modeChangeHandler'")
     log.info("modeChangeHandler: $evt, $settings")
     evtHandler(evt)
+    log.trace("End Executing 'modeChangeHandler'")
 }
 
 //Function appTouch: Event handler when SmartApp is touched
 def appTouch(evt)
 {
+    log.trace("Executing 'appTouch'")
     log.info("appTouch: $evt, $lastTemp, $settings")
     evtHandler(evt)
+    log.trace("End Executing 'appTouch'")
 }
 
 //Function evaluation: Evaluates temperature and control outlets
