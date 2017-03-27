@@ -67,8 +67,8 @@ def updated() {
 
 def initialize() {
     log.trace("Executing Initialize")
-    // TODO: subscribe to attributes, devices, locations, etc.
     createSubscriptions()
+    //checkCreateScheduler()
     log.trace("End Initialize")
 }
 
@@ -99,13 +99,13 @@ def lowForecastedTemperatureChanges(evt){
     log.debug ("The Low Changed To: ${evt.numericValue}")
     
     if(evt.numericValue <= onTemperature){
-		if(!state.lastActiveScheduleDate == new Date().toLocalDate()){
+		if(!state.lastActiveScheduleDate == getJustDate(new Date())){
 			//The low tempurature is going to be cold enough we want to turn on switch.
 			log.info("Forecast Low is going to be below threshold")
 			checkCreateScheduler()
 			
 			//Save last scheduled date for later comparisons.
-			state.lastActiveScheduleDate = new Date().toLocalDate()
+			state.lastActiveScheduleDate = getJustDate(new Date())
 		} else {
 			log.info("Already Scheduled, no need to re-schedule.")
 		}
@@ -120,6 +120,21 @@ def lowForecastedTemperatureChanges(evt){
     
     
     log.trace("End lowForecastedTemperatureChanges")
+}
+
+private def getJustDate(date){
+    def cal = Calendar.getInstance(date)
+    //calendar.setTime(date)
+    cal.set(Calendar.DATE, date.getDate())
+    cal.set(Calendar.MONTH, date.getMonth())
+    cal.set(Calendar.YEAR, date.getYear())
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
+    def dateWithoutTime = cal.getTime()
+    
+    return dateWithoutTime
 }
 
 private def checkCreateScheduler(){
@@ -140,7 +155,7 @@ private def checkCreateScheduler(){
     log.trace("End checkCreateScheduler")
 }
 
-private def notifyUserToPlugIn(){
+def notifyUserToPlugIn(){
     log.trace("Executing notifyUserToPlugIn")
     if(sendPushMessage != null && sendPushMessage){
         //sendPush("Plug in your block heater.")
