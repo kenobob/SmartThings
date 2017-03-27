@@ -1,7 +1,7 @@
 /**
  *  Smart Block Heater
  *
- *  Copyright 2016 kenobob
+ *  Copyright 2017 kenobob
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -99,10 +99,22 @@ def lowForecastedTemperatureChanges(evt){
     log.debug ("The Low Changed To: ${evt.numericValue}")
     
     if(evt.numericValue <= onTemperature){
-        //The low tempurature is going to be cold enough we want to turn on switch.
-        log.info("Forecast Low is going to be below threshold")
-        checkCreateScheduler()
+		if(!state.lastActiveScheduleDate == new Date().toLocalDate()){
+			//The low tempurature is going to be cold enough we want to turn on switch.
+			log.info("Forecast Low is going to be below threshold")
+			checkCreateScheduler()
+			
+			//Save last scheduled date for later comparisons.
+			state.lastActiveScheduleDate = new Date().toLocalDate()
+		} else {
+			log.info("Already Scheduled, no need to re-schedule.")
+		}
     } else {
+		
+		if(state.lastActiveScheduleDate == new Date().toLocalDate()){
+			clearTodyasSchedules()
+		}
+			
         log.info("Nice and warm, no worries.")
     }
     
@@ -115,6 +127,7 @@ private def checkCreateScheduler(){
     //I'm out of scheduled events somehow, clear them out!
     if(!canSchedule()){
         log.debug("Scheduler Full, clear them out and let's start over")
+		clearAllSchedules()
     }
     
     log.debug("Set Notification time for ${beforeBedNotificationTime}")
@@ -130,7 +143,20 @@ private def checkCreateScheduler(){
 private def notifyUserToPlugIn(){
     log.trace("Executing notifyUserToPlugIn")
     if(sendPushMessage != null && sendPushMessage){
-        sendNotificaiton("Plug in your block heater.", [method: "push"])
+        //sendPush("Plug in your block heater.")
+		log.debug("Push Notification: 'Plug in your block heater.'")
     }
     log.trace("End notifyUserToPlugIn")
+}
+
+
+
+private def clearAllSchedules(){
+	// remove all scheduled executions for this SmartApp install
+	unschedule()
+}
+
+private def clearTodyasSchedules(){
+	// unschedule the notification
+	unschedule(notifyUserToPlugIn)
 }
