@@ -124,7 +124,8 @@ def lowForecastedTemperatureChanges(evt){
 
 private def getJustDate(date){
     def cal = Calendar.getInstance(date)
-    //calendar.setTime(date)
+	
+	//Not Set time from date, have to do it manually
     cal.set(Calendar.DATE, date.getDate())
     cal.set(Calendar.MONTH, date.getMonth())
     cal.set(Calendar.YEAR, date.getYear())
@@ -132,6 +133,8 @@ private def getJustDate(date){
     cal.set(Calendar.MINUTE, 0)
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MILLISECOND, 0)
+	
+	//Turn back to a date
     def dateWithoutTime = cal.getTime()
     
     return dateWithoutTime
@@ -150,7 +153,6 @@ private def checkCreateScheduler(){
 //    def tempbeforeBedNotificaitonDate = new Date()
 //    tempbeforeBedNotificaitonDate.set( hourOfDay: 12, minute: 0, second: 0)
 
-    //Doesn't work.... 
     runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
     log.trace("End checkCreateScheduler")
 }
@@ -158,7 +160,7 @@ private def checkCreateScheduler(){
 def notifyUserToPlugIn(){
     log.trace("Executing notifyUserToPlugIn")
     if(sendPushMessage != null && sendPushMessage){
-        //sendPush("Plug in your block heater.")
+        sendPush("Plug in your block heater.")
 		log.debug("Push Notification: 'Plug in your block heater.'")
     }
     log.trace("End notifyUserToPlugIn")
