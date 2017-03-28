@@ -106,6 +106,7 @@ def lowForecastedTemperatureChanges(evt){
     
     if(evt.numericValue <= onTemperature){
 		def todaysDate = getJustDate(new Date())
+		if(state.lastActiveScheduleDate != todaysDate && getJustDate(state.onTimeRunOnceDate) != todaysDate){
 			//The low tempurature is going to be cold enough we want to turn on switch.
 			log.info("Forecast Low is going to be below threshold")
 			checkCreateScheduler()
@@ -131,7 +132,7 @@ def lowForecastedTemperatureChanges(evt){
 private def createDailyScheduler(){
     log.trace("Executing createDailyScheduler")
 	
-	def onTime = CalculateOnTime()
+	def onTime = CalculateOnTime2()
 	schedule(onTime, justInCaseCheck)
 	
     log.trace("End createDailyScheduler")
@@ -153,7 +154,7 @@ private def checkCreateScheduler(){
     runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
 	
 	//create scheduler to turn on block hearter(s)
-	def onTime = CalculateOnTime()
+	def onTime = CalculateOnTime2()
 	
     log.debug("Set On time for ${onTime}")
 	runOnce(onTime,checkThenTurnOnSwitch)
@@ -200,7 +201,8 @@ def justInCaseCheck(){
     log.trace("End justInCaseCheck")
 }
 
-private def CalculateOnTime(){
+private def CalculateOnTime2(){
+    log.trace("Executing CalculateOnTime2")
 	//TODO Do SOMETHING
 	/* Some thoughts
 	* - If start time is before Noon
@@ -209,17 +211,80 @@ private def CalculateOnTime(){
 	* - If even triggers before midnight, but after car start time, assume tomrrow
 	* - If even triggers after midnight, but before car start time, assume today
 	*/
-	def cal = convertDateToCalendar(new Date())
-    cal.set(Calendar.MINUTE, cal.get(Calendar.MINUTE)+1)
+	
+	//Grab the current time
+	def currentTimeCal = Calendar.getInstance()
+	
+	//Convert the start time to Calendar
+	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
+	
+	//Convert the notification time to Calendar
+	def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
+	
+	//Ensure the days are correct
+	def isCarStartTomorrow = false
+	
+	if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStarTimeCal.get(Calendar.HOUR_OF_DAY))
+	{
+		isCarStartTomorrow = true
+	}
+	
+	log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+	//Make sure date month and year are correct
+	carStartTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
+	carStartTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+	carStartTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+	
+	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+	
+	//Correct any date offset needed
+	if(isCarStartTomorrow && carStartTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
+		log.debug("Move Date to tomorrow")
+		carStartTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+	}
+		
+	if(carStartTimeCal.get(Calendar.DATE) <	currentTimeCal.get(Calendar.DATE)){
+		log.error("UH HO! We are in the past!")
+		//TODO Fix this edge case
+	}
+	
+		
 	
 	//Turn back to a date
-    def rtvDate = cal.getTime()
+    def rtvDate = carStartTimeCal.getTime()
+	log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
+	log.info("Start Time: ${rtvDate}")
+	
+    log.trace("End CalculateOnTime2")
     return rtvDate
 	
 }
 
-private def convertDateToCalendar(date){
+
+private def convertISODateStringToDate(String date){
+	try{
+		return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSS", date )
+	}catch(Exception e){
+		log.error(e)
+		return null
+	}
+}
+
+//Convert from string to date.
+private def convertDateToCalendar(String date){
+	Calendar rtv = null
+	
+	convertISODateStringToDate(date)
+	
+	if(d){
+		rtv = convertDateToCalendar(d) 
+	}
+	
+	return rtv
+}
+
+private def convertDateToCalendar(Date date){
 	def cal = Calendar.getInstance()
 	
 	//Not Set time from date, have to do it manually
