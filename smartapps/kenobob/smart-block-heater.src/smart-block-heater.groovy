@@ -105,7 +105,7 @@ def lowForecastedTemperatureChanges(evt){
     log.debug ("The Low Changed To: ${evt.numericValue}")
     
     if(evt.numericValue <= onTemperature){
-		if(!state.lastActiveScheduleDate == getJustDate(new Date())){
+		def todaysDate = getJustDate(new Date())
 			//The low tempurature is going to be cold enough we want to turn on switch.
 			log.info("Forecast Low is going to be below threshold")
 			checkCreateScheduler()
@@ -157,6 +157,8 @@ private def checkCreateScheduler(){
 	
     log.debug("Set On time for ${onTime}")
 	runOnce(onTime,checkThenTurnOnSwitch)
+	
+	state.onTimeRunOnceDate = onTime;
     log.trace("End checkCreateScheduler")
 }
 
@@ -185,6 +187,8 @@ def checkThenTurnOnSwitch(){
 	} else{
 		log.debug("It's too warm right now, don't need to turn on")
 	}
+	
+	state.onTimeRunOnceDate = null
 	
     log.trace("End checkThenTurnOnSwitch")
 }
@@ -231,6 +235,12 @@ private def convertDateToCalendar(date){
 }
 
 private def getJustDate(date){
+	
+	//Quick null check
+	if(date == null){
+		return null
+	}
+	
     def cal = convertDateToCalendar(date)
 	
     cal.set(Calendar.HOUR_OF_DAY, 0)
