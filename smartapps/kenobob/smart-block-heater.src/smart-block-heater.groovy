@@ -60,8 +60,11 @@ def installed() {
 
 def updated() {
     log.debug "Updated with settings: ${settings}"
-
+	// remove all scheduled executions for this SmartApp install
+	unschedule()
+	// unsubscribe all listeners.
     unsubscribe()
+	// re-initialize the smartapp with new options
     initialize()
 }
 
@@ -284,7 +287,6 @@ private def CalculateOnTime(){
     return rtvDate
 	
 }
-
 
 private def convertISODateStringToDate(String date){
 	try{
