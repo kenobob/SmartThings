@@ -60,11 +60,11 @@ def installed() {
 
 def updated() {
     log.debug "Updated with settings: ${settings}"
-	// remove all scheduled executions for this SmartApp install
-	unschedule()
-	// unsubscribe all listeners.
+    // remove all scheduled executions for this SmartApp install
+    unschedule()
+    // unsubscribe all listeners.
     unsubscribe()
-	// re-initialize the smartapp with new options
+    // re-initialize the smartapp with new options
     initialize()
 }
 
@@ -72,10 +72,10 @@ def initialize() {
     log.trace("Executing Initialize")
     createSubscriptions()
 	
-	//Schedule back up the daily check
-	createDailyScheduler()
+    //Schedule back up the daily check
+    createDailyScheduler()
 	
-	//TODO Remove after testing
+    //TODO Remove after testing
     checkCreateScheduler()
 	
     log.trace("End Initialize")
@@ -108,22 +108,22 @@ def lowForecastedTemperatureChanges(evt){
     log.debug ("The Low Changed To: ${evt.numericValue}")
     
     if(evt.numericValue <= onTemperature){
-		def todaysDate = getJustDate(new Date())
-		if(state.lastActiveScheduleDate != todaysDate && getJustDate(state.onTimeRunOnceDate) != todaysDate){
-			//The low tempurature is going to be cold enough we want to turn on switch.
-			log.info("Forecast Low is going to be below threshold")
-			checkCreateScheduler()
+        def todaysDate = getJustDate(new Date())
+        if(state.lastActiveScheduleDate != todaysDate && getJustDate(state.onTimeRunOnceDate) != todaysDate){
+            //The low tempurature is going to be cold enough we want to turn on switch.
+            log.info("Forecast Low is going to be below threshold")
+            checkCreateScheduler()
 			
-			//Save last scheduled date for later comparisons.
-			state.lastActiveScheduleDate = getJustDate(new Date())
-		} else {
-			log.info("Already Scheduled, no need to re-schedule.")
-		}
+            //Save last scheduled date for later comparisons.
+            state.lastActiveScheduleDate = getJustDate(new Date())
+        } else {
+            log.info("Already Scheduled, no need to re-schedule.")
+        }
     } else {
-		//I scheduled something for today, but I don't need to any more, the low changed
-		if(state.lastActiveScheduleDate == new Date().toLocalDate()){
-			clearTodyasSchedules()
-		}
+        //I scheduled something for today, but I don't need to any more, the low changed
+        if(state.lastActiveScheduleDate == new Date().toLocalDate()){
+            clearTodyasSchedules()
+        }
 			
         log.info("Nice and warm, no worries.")
     }
@@ -135,12 +135,12 @@ def lowForecastedTemperatureChanges(evt){
 private def createDailyScheduler(){
     log.trace("Executing createDailyScheduler")
 	
-	def onTime = CalculateReOccuringOnTime()
+    def onTime = CalculateReOccuringOnTime()
 	
-	log.debug("Set Daily On Time: ${onTime}")
+    log.debug("Set Daily On Time: ${onTime}")
 	
-	//Only the Time is used for the date object
-	schedule(onTime, justInCaseCheck)
+    //Only the Time is used for the date object
+    schedule(onTime, justInCaseCheck)
 	
     log.trace("End createDailyScheduler")
 }
@@ -151,24 +151,24 @@ private def checkCreateScheduler(){
     //I'm out of scheduled events somehow, clear them out!
     if(!canSchedule()){
         log.debug("Scheduler Full, clear them out and let's start over")
-		clearAllSchedules()
+        clearAllSchedules()
     }
     
 
     log.debug("Set Notification time for ${beforeBedNotificationTime}")
     //Create Reminder to Plug in Car.
-//    def tempbeforeBedNotificaitonDate = new Date()
-//    tempbeforeBedNotificaitonDate.set( hourOfDay: 12, minute: 0, second: 0)
+    //    def tempbeforeBedNotificaitonDate = new Date()
+    //    tempbeforeBedNotificaitonDate.set( hourOfDay: 12, minute: 0, second: 0)
 
     runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
 	
-	//create scheduler to turn on block hearter(s)
-	def onTime = CalculateOnTime2()
+    //create scheduler to turn on block hearter(s)
+    def onTime = CalculateOnTime2()
 	
     log.debug("Set OneTime On Time: ${onTime}")
-	runOnce(onTime,checkThenTurnOnSwitch)
+    runOnce(onTime,checkThenTurnOnSwitch)
 	
-	state.onTimeRunOnceDate = onTime;
+    state.onTimeRunOnceDate = onTime;
     log.trace("End checkCreateScheduler")
 }
 
@@ -177,113 +177,113 @@ def notifyUserToPlugIn(){
     log.trace("Executing notifyUserToPlugIn")
     if(sendPushMessage != null && sendPushMessage){
         //sendPush("Plug in your block heater.")
-		log.debug("Push Notification: 'Plug in your block heater.'")
+        log.debug("Push Notification: 'Plug in your block heater.'")
     }
     log.trace("End notifyUserToPlugIn")
 }
 
 def checkThenTurnOnSwitch(){
     log.trace("Executing checkThenTurnOnSwitch")
-	def currentTemp = getCurrentTemp()
+    def currentTemp = getCurrentTemp()
 	
-	log.info("Current Temp: ${currentTemp}, On Temp: ${onTemperature}")
+    log.info("Current Temp: ${currentTemp}, On Temp: ${onTemperature}")
 	
-	//Last Minute Check of tempatrue before turning on
-	if(currentTemp <= onTemperature){
-		log.info("Turning the Outlets on")
-		switches.on()
-		//Not sure I'll need state as I probably won't be turning them off in this app... maybe?
-		//state.outlets = "on"
-	} else{
-		log.debug("It's too warm right now, don't need to turn on")
-	}
+    //Last Minute Check of tempatrue before turning on
+    if(currentTemp <= onTemperature){
+        log.info("Turning the Outlets on")
+        switches.on()
+        //Not sure I'll need state as I probably won't be turning them off in this app... maybe?
+        //state.outlets = "on"
+    } else{
+        log.debug("It's too warm right now, don't need to turn on")
+    }
 	
-	state.onTimeRunOnceDate = null
+    state.onTimeRunOnceDate = null
 	
     log.trace("End checkThenTurnOnSwitch")
 }
 
 def justInCaseCheck(){
     log.trace("Executing justInCaseCheck")
-	//Just in case the estimated low is totally differnt than the real temp at start time, lets check.
-	checkThenTurnOnSwitch()
+    //Just in case the estimated low is totally differnt than the real temp at start time, lets check.
+    checkThenTurnOnSwitch()
     log.trace("End justInCaseCheck")
 }
 
 private def CalculateReOccuringOnTime(){
     log.trace("Executing CalculateReOccuringOnTime")
 	
-	//Convert the start time to Calendar
-	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
-	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+    //Convert the start time to Calendar
+    def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
+    carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
 	
-	//Turn back to a date
+    //Turn back to a date
     def rtvDate = carStartTimeCal.getTime()
     log.trace("End CalculateReOccuringOnTime")
-	return rtvDate
+    return rtvDate
 }
 
 private def CalculateOnTime2(){
     log.trace("Executing CalculateOnTime2")
-	//TODO Do SOMETHING
-	/* Some thoughts
-	* - If start time is before Noon
-	* - If wakeup time is after noon
-	*    - If so following assumptions apply
-	* - If even triggers before midnight, but after car start time, assume tomrrow
-	* - If even triggers after midnight, but before car start time, assume today
-	*/
+    //TODO Do SOMETHING
+    /* Some thoughts
+     * - If start time is before Noon
+     * - If wakeup time is after noon
+     *    - If so following assumptions apply
+     * - If even triggers before midnight, but after car start time, assume tomrrow
+     * - If even triggers after midnight, but before car start time, assume today
+     */
 	
-	//Grab the current time
-	def currentTimeCal = convertDateToCalendar(new Date())
+    //Grab the current time
+    def currentTimeCal = convertDateToCalendar(new Date())
 	
-	//Convert the start time to Calendar
-	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
+    //Convert the start time to Calendar
+    def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
 	
-	//Convert the notification time to Calendar
-	def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
+    //Convert the notification time to Calendar
+    def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
 	
-	def carOnTimeCal = convertDateToCalendar(new Date())
+    def carOnTimeCal = convertDateToCalendar(new Date())
 	
-	//Ensure the days are correct
-	def isCarStartTomorrow = false
-	if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
-	{
-		isCarStartTomorrow = true
-	}
+    //Ensure the days are correct
+    def isCarStartTomorrow = false
+    if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
+    {
+        isCarStartTomorrow = true
+    }
 	
-	log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
-	//Make sure date month and year are correct
-	carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
-	carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
-	carOnTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+    log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+    //Make sure date month and year are correct
+    carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
+    carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+    carOnTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
 	
-	//Set hour and minute
-	carOnTimeCal.set(Calendar.HOUR_OF_DAY, carStartTimeCal.get(Calendar.HOUR_OF_DAY))	
-	carOnTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+    //Set hour and minute
+    carOnTimeCal.set(Calendar.HOUR_OF_DAY, carStartTimeCal.get(Calendar.HOUR_OF_DAY))	
+    carOnTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
 	
-	//Correct any date offset needed
-	if(isCarStartTomorrow && carOnTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
-		log.debug("Move Date to tomorrow")
-		carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
-	}
+    //Correct any date offset needed
+    if(isCarStartTomorrow && carOnTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
+        log.debug("Move Date to tomorrow")
+        carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+    }
 	
-		//Check for scheduling in the past problems.
-	//if(carOnTimeCal.get(Calendar.DATE) < currentTimeCal.get(Calendar.DATE)){
-	//	if(carStartTimeCal.get(Calendar.HOUR_OF_DAY) > carOnTimeCal.get(Calendar.HOUR_OF_DAY)) {
-	//		log.info("We are somehow late!")
-	//	} else {
-	//		log.error("UH HO! We are in the past!")
-	//	}
+    //Check for scheduling in the past problems.
+    //if(carOnTimeCal.get(Calendar.DATE) < currentTimeCal.get(Calendar.DATE)){
+    //	if(carStartTimeCal.get(Calendar.HOUR_OF_DAY) > carOnTimeCal.get(Calendar.HOUR_OF_DAY)) {
+    //		log.info("We are somehow late!")
+    //	} else {
+    //		log.error("UH HO! We are in the past!")
+    //	}
 		
-		//TODO Fix this edge case
-	//}
+    //TODO Fix this edge case
+    //}
 	
-	//Turn back to a date
+    //Turn back to a date
     def rtvDate = carOnTimeCal.getTime()
-	//log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
+    //log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
-	//log.info("Start Time: ${rtvDate}")
+    //log.info("Start Time: ${rtvDate}")
 	
     log.trace("End CalculateOnTime2")
     return rtvDate
@@ -291,31 +291,31 @@ private def CalculateOnTime2(){
 }
 
 private def convertISODateStringToDate(String date){
-	try{
-		return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSS", date )
-	}catch(Exception e){
-		log.error(e)
-		return null
-	}
+    try{
+        return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSS", date )
+    }catch(Exception e){
+        log.error(e)
+        return null
+    }
 }
 
 //Convert from string to date.
 private def convertDateToCalendar(String date){
-	Calendar rtv = null
+    Calendar rtv = null
 	
-	convertISODateStringToDate(date)
+    convertISODateStringToDate(date)
 	
-	if(d){
-		rtv = convertDateToCalendar(d) 
-	}
+    if(d){
+        rtv = convertDateToCalendar(d) 
+    }
 	
-	return rtv
+    return rtv
 }
 
 private def convertDateToCalendar(Date date){
-	def cal = Calendar.getInstance()
+    def cal = Calendar.getInstance()
 	
-	//Not Set time from date, have to do it manually
+    //Not Set time from date, have to do it manually
     cal.set(Calendar.DATE, date.getDate())
     cal.set(Calendar.MONTH, date.getMonth())
     cal.set(Calendar.YEAR, date.getYear())
@@ -329,10 +329,10 @@ private def convertDateToCalendar(Date date){
 
 private def getJustDate(date){
 	
-	//Quick null check
-	if(date == null){
-		return null
-	}
+    //Quick null check
+    if(date == null){
+        return null
+    }
 	
     def cal = convertDateToCalendar(date)
 	
@@ -341,31 +341,31 @@ private def getJustDate(date){
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MILLISECOND, 0)
 	
-	//Turn back to a date
+    //Turn back to a date
     def dateWithoutTime = cal.getTime()
     
     return dateWithoutTime
 }
 
 private def getCurrentTemp(){
-	return bwsTemperatureMeasurement.latestValue("temperature")
+    return bwsTemperatureMeasurement.latestValue("temperature")
 }
 
 private def clearAllSchedules(){
     log.trace("Executing clearAllSchedules")
-	// remove all scheduled executions for this SmartApp install
-	unschedule()
+    // remove all scheduled executions for this SmartApp install
+    unschedule()
 	
-	//Schedule back up the daily check
-	createDailyScheduler()
+    //Schedule back up the daily check
+    createDailyScheduler()
 	
     log.trace("End clearAllSchedules")
 }
 
 private def clearTodyasSchedules(){
     log.trace("Executing clearTodyasSchedules")
-	// unschedule the notification
-	unschedule(notifyUserToPlugIn)
-	unschedule(checkThenTurnOnSwitch)
+    // unschedule the notification
+    unschedule(notifyUserToPlugIn)
+    unschedule(checkThenTurnOnSwitch)
     log.trace("End clearTodyasSchedules")
 }
