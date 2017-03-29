@@ -211,8 +211,16 @@ def justInCaseCheck(){
 }
 
 private def CalculateReOccuringOnTime(){
-    log.trace("Executing and Ending CalculateReOccuringOnTime")
-	return CalculateOnTime2()
+    log.trace("Executing CalculateReOccuringOnTime")
+	
+	//Convert the start time to Calendar
+	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
+	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+	
+	//Turn back to a date
+    def rtvDate = carStartTimeCal.getTime()
+    log.trace("End CalculateReOccuringOnTime")
+	return rtvDate
 }
 
 private def CalculateOnTime2(){
@@ -259,6 +267,17 @@ private def CalculateOnTime2(){
 		log.debug("Move Date to tomorrow")
 		carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
 	}
+	
+		//Check for scheduling in the past problems.
+	//if(carOnTimeCal.get(Calendar.DATE) < currentTimeCal.get(Calendar.DATE)){
+	//	if(carStartTimeCal.get(Calendar.HOUR_OF_DAY) > carOnTimeCal.get(Calendar.HOUR_OF_DAY)) {
+	//		log.info("We are somehow late!")
+	//	} else {
+	//		log.error("UH HO! We are in the past!")
+	//	}
+		
+		//TODO Fix this edge case
+	//}
 	
 	//Turn back to a date
     def rtvDate = carOnTimeCal.getTime()
