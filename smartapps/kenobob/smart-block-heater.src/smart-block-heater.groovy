@@ -213,7 +213,7 @@ private def CalculateOnTime2(){
 	*/
 	
 	//Grab the current time
-	def currentTimeCal = Calendar.getInstance()
+	def currentTimeCal = convertDateToCalendar(new Date())
 	
 	//Convert the start time to Calendar
 	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
@@ -221,37 +221,42 @@ private def CalculateOnTime2(){
 	//Convert the notification time to Calendar
 	def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
 	
+	def carOnTimeCal = convertDateToCalendar(new Date())
+	
 	//Ensure the days are correct
 	def isCarStartTomorrow = false
-	
-	if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStarTimeCal.get(Calendar.HOUR_OF_DAY))
+	if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
 	{
 		isCarStartTomorrow = true
 	}
 	
 	log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
 	//Make sure date month and year are correct
-	carStartTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
-	carStartTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
-	carStartTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+	carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
+	carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+	carOnTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
 	
-	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+	//Set hour and minute
+	carOnTimeCal.set(Calendar.HOUR_OF_DAY, carStartTimeCal.get(Calendar.HOUR_OF_DAY))	
+	carOnTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
 	
 	//Correct any date offset needed
-	if(isCarStartTomorrow && carStartTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
+	if(isCarStartTomorrow && carOnTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
 		log.debug("Move Date to tomorrow")
-		carStartTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+		carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
 	}
 		
-	if(carStartTimeCal.get(Calendar.DATE) <	currentTimeCal.get(Calendar.DATE)){
+	if(carOnTimeCal.get(Calendar.DATE) <	currentTimeCal.get(Calendar.DATE)){
+		//if(carStarTimeCal
 		log.error("UH HO! We are in the past!")
+		
 		//TODO Fix this edge case
 	}
 	
 		
 	
 	//Turn back to a date
-    def rtvDate = carStartTimeCal.getTime()
+    def rtvDate = carOnTimeCal.getTime()
 	log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
 	log.info("Start Time: ${rtvDate}")
