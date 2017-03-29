@@ -132,7 +132,7 @@ def lowForecastedTemperatureChanges(evt){
 private def createDailyScheduler(){
     log.trace("Executing createDailyScheduler")
 	
-	def onTime = CalculateOnTime2()
+	def onTime = CalculateOnTime()
 	schedule(onTime, justInCaseCheck)
 	
     log.trace("End createDailyScheduler")
@@ -154,7 +154,7 @@ private def checkCreateScheduler(){
     runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
 	
 	//create scheduler to turn on block hearter(s)
-	def onTime = CalculateOnTime2()
+	def onTime = CalculateOnTime()
 	
     log.debug("Set On time for ${onTime}")
 	runOnce(onTime,checkThenTurnOnSwitch)
@@ -201,8 +201,8 @@ def justInCaseCheck(){
     log.trace("End justInCaseCheck")
 }
 
-private def CalculateOnTime2(){
-    log.trace("Executing CalculateOnTime2")
+private def CalculateOnTime(){
+    log.trace("Executing CalculateOnTime")
 	//TODO Do SOMETHING
 	/* Some thoughts
 	* - If start time is before Noon
@@ -230,7 +230,7 @@ private def CalculateOnTime2(){
 		isCarStartTomorrow = true
 	}
 	
-	log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+	log.debug("CalculateOnTime - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
 	//Make sure date month and year are correct
 	carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
 	carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
@@ -257,11 +257,11 @@ private def CalculateOnTime2(){
 	
 	//Turn back to a date
     def rtvDate = carOnTimeCal.getTime()
-	log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
+	log.debug("CalculateOnTime - Blockheater On Time: ${rtvDate}")
     
 	log.info("Start Time: ${rtvDate}")
 	
-    log.trace("End CalculateOnTime2")
+    log.trace("End CalculateOnTime")
     return rtvDate
 	
 }
