@@ -137,7 +137,7 @@ private def createDailyScheduler(){
 	
 	def onTime = CalculateReOccuringOnTime()
 	
-	log.debug("Daily On Time: ${onTime}")
+	log.debug("Set Daily On Time: ${onTime}")
 	
 	//Only the Time is used for the date object
 	schedule(onTime, justInCaseCheck)
@@ -147,12 +147,14 @@ private def createDailyScheduler(){
 
 private def checkCreateScheduler(){
     log.trace("Executing checkCreateScheduler")
+	
     //I'm out of scheduled events somehow, clear them out!
     if(!canSchedule()){
         log.debug("Scheduler Full, clear them out and let's start over")
 		clearAllSchedules()
     }
     
+
     log.debug("Set Notification time for ${beforeBedNotificationTime}")
     //Create Reminder to Plug in Car.
 //    def tempbeforeBedNotificaitonDate = new Date()
@@ -161,9 +163,9 @@ private def checkCreateScheduler(){
     runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
 	
 	//create scheduler to turn on block hearter(s)
-	def onTime = CalculateOnTime()
+	def onTime = CalculateOnTime2()
 	
-    log.debug("Set On time for ${onTime}")
+    log.debug("Set OneTime On Time: ${onTime}")
 	runOnce(onTime,checkThenTurnOnSwitch)
 	
 	state.onTimeRunOnceDate = onTime;
@@ -209,18 +211,12 @@ def justInCaseCheck(){
 }
 
 private def CalculateReOccuringOnTime(){
-    log.trace("Executing CalculateReOccuringOnTime")
-	
-	//Convert the start time to Calendar
-	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
-	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
-	
-    log.trace("End CalculateReOccuringOnTime")
-	return carStartTimeCal.getTime()
+    log.trace("Executing and Ending CalculateReOccuringOnTime")
+	return CalculateOnTime2()
 }
 
-private def CalculateOnTime(){
-    log.trace("Executing CalculateOnTime")
+private def CalculateOnTime2(){
+    log.trace("Executing CalculateOnTime2")
 	//TODO Do SOMETHING
 	/* Some thoughts
 	* - If start time is before Noon
@@ -248,7 +244,7 @@ private def CalculateOnTime(){
 		isCarStartTomorrow = true
 	}
 	
-	log.debug("CalculateOnTime - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+	log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
 	//Make sure date month and year are correct
 	carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
 	carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
@@ -263,27 +259,14 @@ private def CalculateOnTime(){
 		log.debug("Move Date to tomorrow")
 		carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
 	}
-		
-	//Check for scheduling in the past problems.
-	if(carOnTimeCal.get(Calendar.DATE) < currentTimeCal.get(Calendar.DATE)){
-		if(carStartTimeCal.get(Calendar.HOUR_OF_DAY) > carOnTimeCal.get(Calendar.HOUR_OF_DAY)) {
-			log.info("We are somehow late!")
-		} else {
-			log.error("UH HO! We are in the past!")
-		}
-		
-		//TODO Fix this edge case
-	}
-	
-		
 	
 	//Turn back to a date
     def rtvDate = carOnTimeCal.getTime()
-	log.debug("CalculateOnTime - Blockheater On Time: ${rtvDate}")
+	//log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
-	log.info("Start Time: ${rtvDate}")
+	//log.info("Start Time: ${rtvDate}")
 	
-    log.trace("End CalculateOnTime")
+    log.trace("End CalculateOnTime2")
     return rtvDate
 	
 }
