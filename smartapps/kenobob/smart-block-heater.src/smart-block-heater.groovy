@@ -132,7 +132,11 @@ def lowForecastedTemperatureChanges(evt){
 private def createDailyScheduler(){
     log.trace("Executing createDailyScheduler")
 	
-	def onTime = CalculateOnTime()
+	def onTime = CalculateReOccuringOnTime()
+	
+	log.debug("Daily On Time: ${onTime}")
+	
+	//Only the Time is used for the date object
 	schedule(onTime, justInCaseCheck)
 	
     log.trace("End createDailyScheduler")
@@ -199,6 +203,17 @@ def justInCaseCheck(){
 	//Just in case the estimated low is totally differnt than the real temp at start time, lets check.
 	checkThenTurnOnSwitch()
     log.trace("End justInCaseCheck")
+}
+
+private def CalculateReOccuringOnTime(){
+    log.trace("Executing CalculateReOccuringOnTime")
+	
+	//Convert the start time to Calendar
+	def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
+	carStartTimeCal.set(Calendar.MINUTE, carStartTimeCal.get(Calendar.MINUTE)-minutes)
+	
+    log.trace("End CalculateReOccuringOnTime")
+	return carStartTimeCal.getTime()
 }
 
 private def CalculateOnTime(){
