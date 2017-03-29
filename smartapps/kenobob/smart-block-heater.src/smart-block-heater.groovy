@@ -179,6 +179,9 @@ def notifyUserToPlugIn(){
         //sendPush("Plug in your block heater.")
         log.debug("Push Notification: 'Plug in your block heater.'")
     }
+    if(phoneNumber){
+        sendSms(phoneNumber, "Plug in your block heater.")
+    }
     log.trace("End notifyUserToPlugIn")
 }
 
@@ -293,7 +296,7 @@ private def CalculateOnTime2(){
 private def convertISODateStringToDate(String date){
     try{
         return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSS", date )
-    }catch(Exception e){
+    }catch(def e){
         log.error(e)
         return null
     }
