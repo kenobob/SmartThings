@@ -261,9 +261,13 @@ private def CalculateOnTime(){
 		carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
 	}
 		
-	if(carOnTimeCal.get(Calendar.DATE) <	currentTimeCal.get(Calendar.DATE)){
-		//if(carStarTimeCal
-		log.error("UH HO! We are in the past!")
+	//Check for scheduling in the past problems.
+	if(carOnTimeCal.get(Calendar.DATE) < currentTimeCal.get(Calendar.DATE)){
+		if(carStartTimeCal.get(Calendar.HOUR_OF_DAY) > carOnTimeCal.get(Calendar.HOUR_OF_DAY) {
+			log.info("We are somehow late!")
+		} else {
+			log.error("UH HO! We are in the past!")
+		}
 		
 		//TODO Fix this edge case
 	}
