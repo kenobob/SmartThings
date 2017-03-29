@@ -278,7 +278,8 @@ private def CalculateOnTime2(){
     //	} else {
     //		log.error("UH HO! We are in the past!")
     //	}
-		
+    //SmartThings Build in function
+        //def isBetweenTime = timeOfDayIsBetween(carOnTimeCal.getTime(), convertISODateStringToDate(carStartTime), new Date(), location.timeZone)
     //TODO Fix this edge case
     //}
 	
