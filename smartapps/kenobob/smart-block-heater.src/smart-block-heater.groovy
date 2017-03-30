@@ -296,7 +296,7 @@ private def CalculateOnTime2(){
 
 private def convertISODateStringToDate(String date){
     try{
-        return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSS", date )
+        return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSSX", date )
     }catch(def e){
         log.error(e)
         return null
