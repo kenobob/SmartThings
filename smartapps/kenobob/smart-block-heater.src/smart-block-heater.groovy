@@ -175,7 +175,8 @@ private def checkCreateScheduler(){
 //Has to be public because the scheduler is calling it
 def notifyUserToPlugIn(){
     log.trace("Executing notifyUserToPlugIn")
-    if(sendPushMessage != null && sendPushMessage){
+    log.info("Push Notification Selection ${sendPushMessage}")
+    if(sendPushMessage != null && sendPushMessage == "Yes"){
         //sendPush("Plug in your block heater.")
         log.debug("Push Notification: 'Plug in your block heater.'")
     }
@@ -317,9 +318,9 @@ private def convertDateToCalendar(String date){
 }
 
 private def convertDateToCalendar(Date date){
-    def cal = Calendar.getInstance()
+    def cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
 	
-    //Not Set time from date, have to do it manually
+    //Now Set time from date, have to do it manually - Assume date coming in has been converted to UTC
     cal.set(Calendar.DATE, date.getDate())
     cal.set(Calendar.MONTH, date.getMonth())
     cal.set(Calendar.YEAR, date.getYear())
