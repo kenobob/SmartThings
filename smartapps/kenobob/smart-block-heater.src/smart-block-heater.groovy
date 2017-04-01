@@ -108,20 +108,22 @@ def lowForecastedTemperatureChanges(evt){
     log.debug ("The Low Changed To: ${evt.numericValue}")
     
     if(evt.numericValue <= onTemperature){
-        def todaysDate = getJustDate(new Date())
-        if(state.lastActiveScheduleDate != todaysDate && getJustDate(state.onTimeRunOnceDate) != todaysDate){
+        def todaysDate = convertDatetoISODateString(getJustDate(new Date()))
+        if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
             //The low tempurature is going to be cold enough we want to turn on switch.
+            log.info("state.lastActiveScheduleDate: ${state.lastActiveScheduleDate}, todays date: ${todaysDate}, state.onTimeRunOnceDate: ${state.onTimeRunOnceDate}")
             log.info("Forecast Low is going to be below threshold")
             checkCreateScheduler()
 			
             //Save last scheduled date for later comparisons.
-            state.lastActiveScheduleDate = getJustDate(new Date())
+            state.lastActiveScheduleDate = convertDatetoISODateString(getJustDate(new Date()))
         } else {
             log.info("Already Scheduled, no need to re-schedule.")
         }
     } else {
         //I scheduled something for today, but I don't need to any more, the low changed
-        if(state.lastActiveScheduleDate == new Date().toLocalDate()){
+        if(state.lastActiveScheduleDate == convertDatetoISODateString(getJustDate(new Date())))//new Date().toLocalDate())
+        {
             clearTodyasSchedules()
         }
 			
@@ -166,9 +168,19 @@ private def checkCreateScheduler(){
     def onTime = CalculateOnTime2()
 	
     log.debug("Set OneTime On Time: ${onTime}")
-    runOnce(onTime,checkThenTurnOnSwitch)
+//    def isTypeOfDate = (onTime instanceof Date)
+//    log.info("onTIme is Type of Date? - ${isTypeOfDate}")
+//    java.lang.String onTimeString = convertDatetoISODateString(onTime)
+//    log.debug("OnTime String ${onTimeString}")
+    //    if(onTimeString && onTimeString instanceof String){
+    runOnce(onTime, checkThenTurnOnSwitch)
+    //    } else {
+    //        log.error("On Time String is Maybe NOt INstace of String")
+    //        log.error("On Time String is ${onTimeString}")
+    //        runOnce(onTime, checkThenTurnOnSwitch)
+    //    }
 	
-    state.onTimeRunOnceDate = onTime;
+    state.onTimeRunOnceDate =  convertDatetoISODateString(getJustDate(onTime))
     log.trace("End checkCreateScheduler")
 }
 
@@ -280,7 +292,7 @@ private def CalculateOnTime2(){
     //		log.error("UH HO! We are in the past!")
     //	}
     //SmartThings Build in function
-        //def isBetweenTime = timeOfDayIsBetween(carOnTimeCal.getTime(), convertISODateStringToDate(carStartTime), new Date(), location.timeZone)
+    //def isBetweenTime = timeOfDayIsBetween(carOnTimeCal.getTime(), convertISODateStringToDate(carStartTime), new Date(), location.timeZone)
     //TODO Fix this edge case
     //}
 	
@@ -304,6 +316,24 @@ private def convertISODateStringToDate(String date){
     }
 }
 
+private def convertDatetoISODateString(Date date){
+    try{
+        log.debug("Convert Date to String: ${date}")
+        def formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+        
+        //formatter.setTimeZone(location.timeZone)
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"))
+                
+        def rtv = formatter.format(date)
+                
+        log.debug("Convert Date to String Converted: ${rtv}")
+        
+        return rtv
+    }catch(def e){
+        log.error(e)
+    }
+}
+
 //Convert from string to date.
 private def convertDateToCalendar(String date){
     Calendar rtv = null
@@ -319,13 +349,14 @@ private def convertDateToCalendar(String date){
 
 private def convertDateToCalendar(Date date){
     def cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+    cal.setTime(date)
 	
     //Now Set time from date, have to do it manually - Assume date coming in has been converted to UTC
-    cal.set(Calendar.DATE, date.getDate())
-    cal.set(Calendar.MONTH, date.getMonth())
-    cal.set(Calendar.YEAR, date.getYear())
-    cal.set(Calendar.HOUR_OF_DAY, date.getHours())
-    cal.set(Calendar.MINUTE, date.getMinutes())
+//    cal.set(Calendar.DATE, date.getDate())
+//    cal.set(Calendar.MONTH, date.getMonth())
+//    cal.set(Calendar.YEAR, date.getYear())
+//    cal.set(Calendar.HOUR_OF_DAY, date.getHours())
+//    cal.set(Calendar.MINUTE, date.getMinutes())
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MILLISECOND, 0)
     
@@ -339,7 +370,14 @@ private def getJustDate(date){
         return null
     }
 	
-    def cal = convertDateToCalendar(date)
+    
+    def cal = null
+    if (date instanceof Date) {
+        //get unix time
+        cal = convertDateToCalendar(date)
+    } else if(date instanceof Calendar){
+        cal = date
+    }
 	
     cal.set(Calendar.HOUR_OF_DAY, 0)
     cal.set(Calendar.MINUTE, 0)
