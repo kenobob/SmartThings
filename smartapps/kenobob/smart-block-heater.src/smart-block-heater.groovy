@@ -263,16 +263,24 @@ private def CalculateOnTime2(){
 	
     //Ensure the days are correct
     def isCarStartTomorrow = false
-    if(currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
+    //Logic For Tomorrow ... the On Time needs to be less than the current time
+    //aka it's already past start time....
+    if(//currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && 
+        currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
     {
         isCarStartTomorrow = true
     }
+    
+    
 	
-    log.debug("CalculateOnTime2 - Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+    log.debug("CalculateOnTime2 - Settings Car Start Time: ${convertISODateStringToDate(carStartTime)}")
     //Make sure date month and year are correct
     carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
     carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
     carOnTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+    
+    //Calculate the Date to make sure it's up to-date: TODO Remove
+    def throwMeAway = carOnTimeCal.getTime()
 	
     //Set hour and minute
     carOnTimeCal.set(Calendar.HOUR_OF_DAY, carStartTimeCal.get(Calendar.HOUR_OF_DAY))	
@@ -298,7 +306,7 @@ private def CalculateOnTime2(){
 	
     //Turn back to a date
     def rtvDate = carOnTimeCal.getTime()
-    //log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
+    log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
     //log.info("Start Time: ${rtvDate}")
 	
