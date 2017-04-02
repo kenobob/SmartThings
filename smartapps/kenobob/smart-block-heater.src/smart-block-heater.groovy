@@ -155,24 +155,20 @@ private def checkCreateScheduler(){
         log.debug("Scheduler Full, clear them out and let's start over")
         clearAllSchedules()
     }
-    
-
-    log.debug("Set Notification time for ${beforeBedNotificationTime}")
-    //Create Reminder to Plug in Car.
-    //    def tempbeforeBedNotificaitonDate = new Date()
-    //    tempbeforeBedNotificaitonDate.set( hourOfDay: 12, minute: 0, second: 0)
-
-    runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
 	
-    //create scheduler to turn on block hearter(s)
+    
     def onTime = CalculateOnTime2()
+    
+    
+    createNotificationScheduler(onTime)
 	
     log.debug("Set OneTime On Time: ${onTime}")
-//    def isTypeOfDate = (onTime instanceof Date)
-//    log.info("onTIme is Type of Date? - ${isTypeOfDate}")
-//    java.lang.String onTimeString = convertDatetoISODateString(onTime)
-//    log.debug("OnTime String ${onTimeString}")
+    //    def isTypeOfDate = (onTime instanceof Date)
+    //    log.info("onTIme is Type of Date? - ${isTypeOfDate}")
+    //    java.lang.String onTimeString = convertDatetoISODateString(onTime)
+    //    log.debug("OnTime String ${onTimeString}")
     //    if(onTimeString && onTimeString instanceof String){
+    //create scheduler to turn on block hearter(s)
     runOnce(onTime, checkThenTurnOnSwitch)
     //    } else {
     //        log.error("On Time String is Maybe NOt INstace of String")
@@ -182,6 +178,35 @@ private def checkCreateScheduler(){
 	
     state.onTimeRunOnceDate =  convertDatetoISODateString(getJustDate(onTime))
     log.trace("End checkCreateScheduler")
+}
+
+def createNotificationScheduler(Date carOnTime){
+    
+    def beforeBedNotificationCal = convertDateToCalendar(beforeBedNotificationTime)
+    def currentTimeCal = convertDateToCalendar(beforeBedNotificationTime)
+    def carStartTimeCalendar = convertDateToCalendar(carStartTime)
+    def carOnTimeCalendar = convertDateToCalendar(carOnTime)
+    
+    //Make sure date month and year are correct
+    beforeBedNotificationCal.set(Calendar.DATE, carOnTimeCalendar.get(Calendar.DATE))
+    beforeBedNotificationCal.set(Calendar.YEAR, carOnTimeCalendar.get(Calendar.YEAR))
+    beforeBedNotificationCal.set(Calendar.MONTH, carOnTimeCalendar.get(Calendar.MONTH))
+    
+    carStartTimeCalendar.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
+    carStartTimeCalendar.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+    carStartTimeCalendar.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+    
+    def beforeBedNotificationTimeDate = beforeBedNotificationCal.getTime()
+    def carStartTimeDate = carStartTimeCalendar.getTime()
+    
+    if(!timeOfDayIsBetween(beforeBedNotificationTimeDate, carStartTimeDate, new Date(), TimeZone.getTimeZone("UTC")))
+    {
+        log.debug("Set Notification time for ${beforeBedNotificationTime}")
+        //Create Reminder to Plug in Car.
+        runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
+    } else {
+        log.info("SSSHHHH No Notification, it's in the quiet times.")
+    }
 }
 
 //Has to be public because the scheduler is calling it
@@ -346,12 +371,14 @@ private def convertDatetoISODateString(Date date){
 private def convertDateToCalendar(String date){
     Calendar rtv = null
 	
-    convertISODateStringToDate(date)
+    def d = convertISODateStringToDate(date)
 	
-    if(d){
+    if(d != null){
         rtv = convertDateToCalendar(d) 
+    } else {
+        log.error("convertDateToCalendar string is null: ${date}")
     }
-	
+
     return rtv
 }
 
@@ -360,11 +387,11 @@ private def convertDateToCalendar(Date date){
     cal.setTime(date)
 	
     //Now Set time from date, have to do it manually - Assume date coming in has been converted to UTC
-//    cal.set(Calendar.DATE, date.getDate())
-//    cal.set(Calendar.MONTH, date.getMonth())
-//    cal.set(Calendar.YEAR, date.getYear())
-//    cal.set(Calendar.HOUR_OF_DAY, date.getHours())
-//    cal.set(Calendar.MINUTE, date.getMinutes())
+    //    cal.set(Calendar.DATE, date.getDate())
+    //    cal.set(Calendar.MONTH, date.getMonth())
+    //    cal.set(Calendar.YEAR, date.getYear())
+    //    cal.set(Calendar.HOUR_OF_DAY, date.getHours())
+    //    cal.set(Calendar.MINUTE, date.getMinutes())
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MILLISECOND, 0)
     
@@ -418,5 +445,10 @@ private def clearTodyasSchedules(){
     // unschedule the notification
     unschedule(notifyUserToPlugIn)
     unschedule(checkThenTurnOnSwitch)
+    
+    //Reset State Elements
+    state.lastActiveScheduleDate = null 
+    state.onTimeRunOnceDate = null
+    
     log.trace("End clearTodyasSchedules")
 }
