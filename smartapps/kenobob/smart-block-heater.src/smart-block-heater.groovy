@@ -159,10 +159,10 @@ private def checkCreateScheduler(){
     
     def onTime = CalculateOnTime2()
     
+    log.debug("Block Heater On Time: ${onTime}")
     
-    createNotificationScheduler(onTime)
+    createNotificationScheduler()
 	
-    log.debug("Set OneTime On Time: ${onTime}")
     //    def isTypeOfDate = (onTime instanceof Date)
     //    log.info("onTIme is Type of Date? - ${isTypeOfDate}")
     //    java.lang.String onTimeString = convertDatetoISODateString(onTime)
@@ -180,31 +180,9 @@ private def checkCreateScheduler(){
     log.trace("End checkCreateScheduler")
 }
 
-def createNotificationScheduler(Date carOnTime){
-    
-    def beforeBedNotificationCal = convertDateToCalendar(beforeBedNotificationTime)
-    def currentTimeCal = convertDateToCalendar(beforeBedNotificationTime)
-    def carStartTimeCalendar = convertDateToCalendar(carStartTime)
-    def carOnTimeCalendar = convertDateToCalendar(carOnTime)
-    
-    //The calendar date sections is making assumptions about time and date being close to the On time, and the current time.
-    //We probably can't make thse assumptions
-    //TODO: Figure out a way to calculate these better
-    
-    //Make sure date month and year are correct
-    beforeBedNotificationCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
-    beforeBedNotificationCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
-    beforeBedNotificationCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
-    
-    //Make sure date month and year are correct
-    carStartTimeCalendar.set(Calendar.DATE, carOnTimeCalendar.get(Calendar.DATE))
-    carStartTimeCalendar.set(Calendar.YEAR, carOnTimeCalendar.get(Calendar.YEAR))
-    carStartTimeCalendar.set(Calendar.MONTH, carOnTimeCalendar.get(Calendar.MONTH))
-    
-    def beforeBedNotificationTimeDate = beforeBedNotificationCal.getTime()
-    def carStartTimeDate = carStartTimeCalendar.getTime()
-    
-    if(!timeOfDayIsBetween(beforeBedNotificationTimeDate, carStartTimeDate, new Date(), TimeZone.getTimeZone("UTC")))
+def createNotificationScheduler(){
+    log.trace("Executing createNotificationScheduler")
+    if(!isQuietHours())
     {
         log.debug("Set Notification time for ${beforeBedNotificationTime}")
         //Create Reminder to Plug in Car.
@@ -212,6 +190,7 @@ def createNotificationScheduler(Date carOnTime){
     } else {
         log.info("SSSHHHH No Notification, it's in the quiet times.")
     }
+    log.trace("end createNotificationScheduler")
 }
 
 //Has to be public because the scheduler is calling it
@@ -267,6 +246,40 @@ private def CalculateReOccuringOnTime(){
     def rtvDate = carStartTimeCal.getTime()
     log.trace("End CalculateReOccuringOnTime")
     return rtvDate
+}
+
+private def isQuietHours(){
+    
+    //Convert Everything to Calendars
+    def startCalendar = convertDateToCalendar(beforeBedNotificationTime)
+    def currentCalendar = convertDateToCalendar(new Date())
+    def endCalendar = convertDateToCalendar(carStartTime)
+    
+    //Convert to minutes for easy comparison
+    def startMinutes = startCalendar.get(Calendar.MINUTE) + (startCalendar.get(Calendar.HOUR_OF_DAY) * 60);
+    def endMinutes = endCalendar.get(Calendar.MINUTE) + (endCalendar.get(Calendar.HOUR_OF_DAY) * 60);
+    def currentMinutes = currentCalendar.get(Calendar.MINUTE) + (currentCalendar.get(Calendar.HOUR_OF_DAY) * 60);
+    log.debug("Minutes: start: ${startMinutes} end: ${endMinutes} current: ${currentMinutes}")
+    
+    if(startMinutes > endMinutes)
+    {
+        log.info("Quiet Hours Span A Day Into the future")
+        //Assuming seperate days
+        if(startMinutes < currentMinutes || currentMinutes < endMinutes){
+            //Assuming we crossed one day into the future
+            return true
+        } else{
+            return false
+        }
+    } else {
+        log.info("Quiet Hours Are on the Same Day")
+        //Assume the same day
+        if(startMinutes < currentMinutes && currentMinutes < startMinutes){
+            return true
+        } else {
+            return false
+        }
+    }
 }
 
 private def CalculateOnTime2(){
