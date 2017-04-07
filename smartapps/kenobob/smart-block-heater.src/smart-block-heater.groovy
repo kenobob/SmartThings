@@ -187,14 +187,19 @@ def createNotificationScheduler(Date carOnTime){
     def carStartTimeCalendar = convertDateToCalendar(carStartTime)
     def carOnTimeCalendar = convertDateToCalendar(carOnTime)
     
-    //Make sure date month and year are correct
-    beforeBedNotificationCal.set(Calendar.DATE, carOnTimeCalendar.get(Calendar.DATE))
-    beforeBedNotificationCal.set(Calendar.YEAR, carOnTimeCalendar.get(Calendar.YEAR))
-    beforeBedNotificationCal.set(Calendar.MONTH, carOnTimeCalendar.get(Calendar.MONTH))
+    //The calendar date sections is making assumptions about time and date being close to the On time, and the current time.
+    //We probably can't make thse assumptions
+    //TODO: Figure out a way to calculate these better
     
-    carStartTimeCalendar.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
-    carStartTimeCalendar.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
-    carStartTimeCalendar.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+    //Make sure date month and year are correct
+    beforeBedNotificationCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
+    beforeBedNotificationCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+    beforeBedNotificationCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+    
+    //Make sure date month and year are correct
+    carStartTimeCalendar.set(Calendar.DATE, carOnTimeCalendar.get(Calendar.DATE))
+    carStartTimeCalendar.set(Calendar.YEAR, carOnTimeCalendar.get(Calendar.YEAR))
+    carStartTimeCalendar.set(Calendar.MONTH, carOnTimeCalendar.get(Calendar.MONTH))
     
     def beforeBedNotificationTimeDate = beforeBedNotificationCal.getTime()
     def carStartTimeDate = carStartTimeCalendar.getTime()
