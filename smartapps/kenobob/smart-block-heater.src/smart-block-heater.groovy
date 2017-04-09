@@ -64,17 +64,34 @@ def installed() {
 
 def updated() {
     log.debug "Updated with settings: ${settings}"
-    // remove all scheduled executions for this SmartApp install
-    unschedule()
-    // unsubscribe all listeners.
-    unsubscribe()
+    
     // re-initialize the smartapp with new options
-    initialize()
+    initalizeTheApp()
 }
 
 //TODO: Add in Tempeature Schedule Check
 def initialize() {
     log.trace("Executing Initialize")
+    
+    initalizeTheApp()
+	
+    log.trace("End Initialize")
+}
+
+def initalizeTheApp(){
+    log.trace("Executing initalizeTheApp")
+    
+    //Reset everything!!
+    // remove all scheduled executions for this SmartApp install
+    unschedule()
+    // unsubscribe all listeners.
+    unsubscribe()
+    
+    //Reset Application state variables
+    state.onTimeRunOnceDate = null
+    state.lastActiveScheduleDate = null
+    
+    //Start Setting up
     createSubscriptions()
 	
     //Schedule back up the daily check
@@ -83,7 +100,7 @@ def initialize() {
     //Process current low temp to see if we need to schedule something
     processTemperature(getCurrentLowTemp())
 	
-    log.trace("End Initialize")
+    log.trace("End initalizeTheApp")
 }
 
 //TODO: Subscribe to Presence sensors for notificaitons when you get home
@@ -443,7 +460,7 @@ private def isSameDay(Date date1, Date date2){
 private def isSameDay(Calendar cal1, Calendar cal2){
     if(cal1 != null && cal2 !=null){
         //Convert Timzeones to Local (Should be UTC coming in...)
-        def localTimeZone = location.timeZone()
+        def localTimeZone = location.timeZone
         log.debug("Local Time Zone: ${localTimeZone}")
         cal1.setTimeZone(localTimeZone)
         cal1.setTimeZone(localTimeZone)
