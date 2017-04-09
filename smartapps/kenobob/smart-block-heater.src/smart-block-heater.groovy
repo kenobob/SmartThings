@@ -242,6 +242,21 @@ def justInCaseCheck(){
     log.trace("End justInCaseCheck")
 }
 
+
+////////////////////////////////////////////////////////////////
+///// *************** Temperature Helpers *********************/
+////////////////////////////////////////////////////////////////
+private def getCurrentTemp(){
+    return bwsTemperatureMeasurement.latestValue("temperature")
+}
+
+private def getCurrentLowTemp(){
+    return bwsTemperatureMeasurement.latestValue("lowtemperature")
+}
+
+////////////////////////////////////////////////////////////////
+///// ***************** Date Helpers **************************/
+////////////////////////////////////////////////////////////////
 private def CalculateReOccuringOnTime(){
     log.trace("Executing CalculateReOccuringOnTime")
 	
@@ -450,9 +465,10 @@ private def getJustDate(date){
     return dateWithoutTime
 }
 
-private def getCurrentTemp(){
-    return bwsTemperatureMeasurement.latestValue("temperature")
-}
+
+////////////////////////////////////////////////////////////////
+///// ***************** Scheduler Helpers *********************/
+////////////////////////////////////////////////////////////////
 
 private def clearAllSchedules(){
     log.trace("Executing clearAllSchedules")
