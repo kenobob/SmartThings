@@ -322,10 +322,8 @@ private def isQuietHours(){
     } else {
         log.info("Quiet Hours Are on the Same Day")
         //Assume the same day
-        //TODO Fix this. Saw an error go by
-        //Still scheduled notification during quiet hours... 2 minutes after quiet hour started
-	//Minutes: start: 346 end: 410 current: 348
-        if(startMinutes < currentMinutes && currentMinutes < startMinutes){
+        
+        if(startMinutes < currentMinutes && currentMinutes < endMinutes){
             return true
         } else {
             return false
