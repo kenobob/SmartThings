@@ -19,10 +19,12 @@ definition(
     author: "kenobob",
     description: "This will be a smart block heater",
     category: "My Apps",
-    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
-    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
-    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
-//http://cdn.device-icons.smartthings.com/Transportation/transportation6-icn@2x.png
+    iconUrl: "http://cdn.device-icons.smartthings.com/Transportation/transportation6-icn.png",
+    iconX2Url: "http://cdn.device-icons.smartthings.com/Transportation/transportation6-icn@2x.png",
+    iconX3Url: "http://cdn.device-icons.smartthings.com/Transportation/transportation6-icn@3x.png")
+//    iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
+//    iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
+//    iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
 //http://scripts.3dgo.net/smartthings/icons/
 
 
@@ -111,6 +113,8 @@ def lowForecastedTemperatureChanges(evt){
     
     log.trace("Executing lowForecastedTemperatureChanges")
     log.debug ("The Low Changed To: ${evt.numericValue}")
+    
+    //Process the temperature change to see if we need to do something
     processTemperature(evt.numericValue)
     
     log.trace("End lowForecastedTemperatureChanges")
