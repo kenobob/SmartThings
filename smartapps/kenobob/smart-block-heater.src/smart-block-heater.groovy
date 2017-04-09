@@ -107,36 +107,11 @@ private def createSubscriptions()
 ///// *********************Subscriptions **********************/
 ////////////////////////////////////////////////////////////////
 // TODO: implement event handlers
-// TODO: Fix Date checking and state saving
-// TODO: Split up event and rest so checks can be made seperate from subscription event (AKA During initalization)
 def lowForecastedTemperatureChanges(evt){
     
     log.trace("Executing lowForecastedTemperatureChanges")
     log.debug ("The Low Changed To: ${evt.numericValue}")
-    
-    if(evt.numericValue <= onTemperature){
-        def todaysDate = convertDatetoISODateString(getJustDate(new Date()))
-        if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
-            //The low tempurature is going to be cold enough we want to turn on switch.
-            log.info("state.lastActiveScheduleDate: ${state.lastActiveScheduleDate}, todays date: ${todaysDate}, state.onTimeRunOnceDate: ${state.onTimeRunOnceDate}")
-            log.info("Forecast Low is going to be below threshold")
-            createOneTimeSchedulers()
-			
-            //Save last scheduled date for later comparisons.
-            state.lastActiveScheduleDate = convertDatetoISODateString(getJustDate(new Date()))
-        } else {
-            log.info("Already Scheduled, no need to re-schedule.")
-        }
-    } else {
-        //I scheduled something for today, but I don't need to any more, the low changed
-        if(state.lastActiveScheduleDate == convertDatetoISODateString(getJustDate(new Date())))//new Date().toLocalDate())
-        {
-            clearTodyasSchedules()
-        }
-			
-        log.info("Nice and warm, no worries.")
-    }
-    
+    processTemperature(evt.numericValue)
     
     log.trace("End lowForecastedTemperatureChanges")
 }
@@ -209,6 +184,33 @@ def createNotificationScheduler(){
 ////////////////////////////////////////////////////////////////
 ///// ************************* Events ************************/
 ////////////////////////////////////////////////////////////////
+
+// TODO: Fix Date checking and state saving
+def processTemperature(def temperatureToProcess){
+    if(temperatureToProcess <= onTemperature){
+        def todaysDate = convertDatetoISODateString(getJustDate(new Date()))
+        if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
+            //The low tempurature is going to be cold enough we want to turn on switch.
+            log.info("state.lastActiveScheduleDate: ${state.lastActiveScheduleDate}, todays date: ${todaysDate}, state.onTimeRunOnceDate: ${state.onTimeRunOnceDate}")
+            log.info("Forecast Low is going to be below threshold")
+            createOneTimeSchedulers()
+			
+            //Save last scheduled date for later comparisons.
+            state.lastActiveScheduleDate = convertDatetoISODateString(getJustDate(new Date()))
+        } else {
+            log.info("Already Scheduled, no need to re-schedule.")
+        }
+    } else {
+        //I scheduled something for today, but I don't need to any more, the low changed
+        if(state.lastActiveScheduleDate == convertDatetoISODateString(getJustDate(new Date())))//new Date().toLocalDate())
+        {
+            clearTodyasSchedules()
+        }
+			
+        log.info("Nice and warm, no worries.")
+    }
+}
+
 def checkThenTurnOnSwitch(){
     log.trace("Executing checkThenTurnOnSwitch")
     def currentTemp = getCurrentTemp()
