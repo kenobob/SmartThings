@@ -103,7 +103,9 @@ private def createSubscriptions()
     log.trace("End Create Subscriptions")
 }
 
-
+////////////////////////////////////////////////////////////////
+///// *********************Subscriptions **********************/
+////////////////////////////////////////////////////////////////
 // TODO: implement event handlers
 // TODO: Fix Date checking and state saving
 // TODO: Split up event and rest so checks can be made seperate from subscription event (AKA During initalization)
@@ -139,6 +141,10 @@ def lowForecastedTemperatureChanges(evt){
     log.trace("End lowForecastedTemperatureChanges")
 }
 
+
+////////////////////////////////////////////////////////////////
+///// *************** Create Schedulers *********************/
+////////////////////////////////////////////////////////////////
 private def createDailyScheduler(){
     log.trace("Executing createDailyScheduler")
 	
@@ -200,20 +206,9 @@ def createNotificationScheduler(){
     log.trace("end createNotificationScheduler")
 }
 
-//Has to be public because the scheduler is calling it
-def notifyUserToPlugIn(){
-    log.trace("Executing notifyUserToPlugIn")
-    log.info("Push Notification Selection ${sendPushMessage}")
-    if(sendPushMessage != null && sendPushMessage == "Yes"){
-        //sendPush("Plug in your block heater.")
-        log.debug("Push Notification: 'Plug in your block heater.'")
-    }
-    if(phoneNumber){
-        sendSms(phoneNumber, "Plug in your block heater.")
-    }
-    log.trace("End notifyUserToPlugIn")
-}
-
+////////////////////////////////////////////////////////////////
+///// ************************* Events ************************/
+////////////////////////////////////////////////////////////////
 def checkThenTurnOnSwitch(){
     log.trace("Executing checkThenTurnOnSwitch")
     def currentTemp = getCurrentTemp()
@@ -240,6 +235,19 @@ def justInCaseCheck(){
     //Just in case the estimated low is totally differnt than the real temp at start time, lets check.
     checkThenTurnOnSwitch()
     log.trace("End justInCaseCheck")
+}
+
+def notifyUserToPlugIn(){
+    log.trace("Executing notifyUserToPlugIn")
+    log.info("Push Notification Selection ${sendPushMessage}")
+    if(sendPushMessage != null && sendPushMessage == "Yes"){
+        //sendPush("Plug in your block heater.")
+        log.debug("Push Notification: 'Plug in your block heater.'")
+    }
+    if(phoneNumber){
+        sendSms(phoneNumber, "Plug in your block heater.")
+    }
+    log.trace("End notifyUserToPlugIn")
 }
 
 
