@@ -22,6 +22,8 @@ definition(
     iconUrl: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience.png",
     iconX2Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png",
     iconX3Url: "https://s3.amazonaws.com/smartapp-icons/Convenience/Cat-Convenience@2x.png")
+//http://cdn.device-icons.smartthings.com/Transportation/transportation6-icn@2x.png
+//http://scripts.3dgo.net/smartthings/icons/
 
 
 preferences {
@@ -68,6 +70,7 @@ def updated() {
     initialize()
 }
 
+//TODO: Add in Tempeature Schedule Check
 def initialize() {
     log.trace("Executing Initialize")
     createSubscriptions()
@@ -81,7 +84,7 @@ def initialize() {
     log.trace("End Initialize")
 }
 
-
+//TODO: Subscribe to Presence sensors for notificaitons when you get home
 private def createSubscriptions()
 {
     log.trace("Executing Create Subscriptions")
@@ -102,6 +105,8 @@ private def createSubscriptions()
 
 
 // TODO: implement event handlers
+// TODO: Fix Date checking and state saving
+// TODO: Split up event and rest so checks can be made seperate from subscription event (AKA During initalization)
 def lowForecastedTemperatureChanges(evt){
     
     log.trace("Executing lowForecastedTemperatureChanges")
@@ -186,6 +191,8 @@ def createNotificationScheduler(){
     {
         log.debug("Set Notification time for ${beforeBedNotificationTime}")
         //Create Reminder to Plug in Car.
+        //TODO: Currently Possibility for the OnTime to Occure before the Notificaiton time
+        //   Probably something to do with in quiet hours, but assuming same day because of UTC.
         runOnce(beforeBedNotificationTime, notifyUserToPlugIn)
     } else {
         log.info("SSSHHHH No Notification, it's in the quiet times.")
