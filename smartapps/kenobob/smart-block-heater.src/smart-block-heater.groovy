@@ -108,7 +108,6 @@ private def createSubscriptions()
 ////////////////////////////////////////////////////////////////
 ///// *********************Subscriptions **********************/
 ////////////////////////////////////////////////////////////////
-// TODO: implement event handlers
 def lowForecastedTemperatureChanges(evt){
     
     log.trace("Executing lowForecastedTemperatureChanges")
@@ -166,7 +165,7 @@ private def createOneTimeSchedulers(){
     //        runOnce(onTime, checkThenTurnOnSwitch)
     //    }
 	
-    state.onTimeRunOnceDate =  convertDatetoISODateString(getJustDate(onTime))
+    state.onTimeRunOnceDate =  convertDatetoISODateString(onTime)
     log.trace("End createOneTimeSchedulers")
 }
 
@@ -190,28 +189,39 @@ def createNotificationScheduler(){
 ////////////////////////////////////////////////////////////////
 
 // TODO: Fix Date checking and state saving
+// TODO: If alreayd on... do nothing??
 def processTemperature(def temperatureToProcess){
+    
     if(temperatureToProcess <= onTemperature){
-        def todaysDate = convertDatetoISODateString(getJustDate(new Date()))
-        if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
+        // So it's oold enough, lets check some stuff out
+        
+        def rightNowDate = new Date()
+        
+        if(state.lastActiveScheduleDate == null){
+            log.info("Temperature is below threshold")
+            createOneTimeSchedulers()
+        } else if(!isSameDay(convertISODateStringToDate(state.lastActiveScheduleDate), rightNowDate) && !isSameDay(convertISODateStringToDate(state.onTimeRunOnceDate), rightNowDate)){
+            //if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
             //The low tempurature is going to be cold enough we want to turn on switch.
             log.info("state.lastActiveScheduleDate: ${state.lastActiveScheduleDate}, todays date: ${todaysDate}, state.onTimeRunOnceDate: ${state.onTimeRunOnceDate}")
-            log.info("Forecast Low is going to be below threshold")
+            log.info("Temperature is below threshold")
             createOneTimeSchedulers()
 			
             //Save last scheduled date for later comparisons.
-            state.lastActiveScheduleDate = convertDatetoISODateString(getJustDate(new Date()))
+            state.lastActiveScheduleDate = convertDatetoISODateString(rightNowDate)
         } else {
             log.info("Already Scheduled, no need to re-schedule.")
         }
     } else {
-        //I scheduled something for today, but I don't need to any more, the low changed
-        if(state.lastActiveScheduleDate == convertDatetoISODateString(getJustDate(new Date())))//new Date().toLocalDate())
+        //It's nice and warm.
+        log.info("Nice and warm, no worries.")
+        
+        if(isSameDay(convertISODateStringToDate(state.lastActiveScheduleDate), rightNowDate))
         {
+            //I scheduled something for today, but I don't need to any more, the temp changed
             clearTodyasSchedules()
         }
 			
-        log.info("Nice and warm, no worries.")
     }
 }
 
@@ -232,6 +242,8 @@ def checkThenTurnOnSwitch(){
     }
 	
     state.onTimeRunOnceDate = null
+    //Not sure if this will cause problems. From the time the heater turns on to the time you need to start...
+    state.lastActiveScheduleDate = null
 	
     log.trace("End checkThenTurnOnSwitch")
 }
@@ -310,6 +322,9 @@ private def isQuietHours(){
     } else {
         log.info("Quiet Hours Are on the Same Day")
         //Assume the same day
+        //TODO Fix this. Saw an error go by
+        //Still scheduled notification during quiet hours... 2 minutes after quiet hour started
+	//Minutes: start: 346 end: 410 current: 348
         if(startMinutes < currentMinutes && currentMinutes < startMinutes){
             return true
         } else {
@@ -421,6 +436,43 @@ private def convertDatetoISODateString(Date date){
     }
 }
 
+private def isSameDay(Date date1, Date date2){
+
+    if(date1 != null && date2 !=null){
+        isSameDay(convertDateToCalendar(date1),convertDateToCalendar(date2))
+    } else {
+        log.error("isSameDay coming back NULL!! date1: ${date1} date2: ${date2}")
+        return false
+    }
+}
+
+private def isSameDay(Calendar cal1, Calendar cal2){
+    if(cal1 != null && cal2 !=null){
+        //Convert Timzeones to Local (Should be UTC coming in...)
+        def localTimeZone = location.timeZone()
+        log.debug("Local Time Zone: ${localTimeZone}")
+        cal1.setTimeZone(localTimeZone)
+        cal1.setTimeZone(localTimeZone)
+        
+        //check month, day and year to make sure it's the same day.
+        if(
+            cal1.get(Calendar.DATE)== cal2.get(Calendar.DATE)
+            && cal1.get(Calendar.MONTH)== cal2.get(Calendar.MONTH)
+            && cal1.get(Calendar.YEAR)== cal2.get(Calendar.YEAR)
+        ) 
+        {
+            //same day
+            return true
+        } else {
+            //Not the same day
+            return false
+        }
+    } else {
+        log.error("isSameDay coming back NULL!! Cal1: ${cal1} Cal2: ${cal2}")
+        return false
+    }
+}
+
 //Convert from string to date.
 private def convertDateToCalendar(String date){
     Calendar rtv = null
@@ -497,6 +549,7 @@ private def clearAllSchedules(){
 
 private def clearTodyasSchedules(){
     log.trace("Executing clearTodyasSchedules")
+    log.info("Clearing Schedulers for Daily on and Notifications ")
     // unschedule the notification
     unschedule(notifyUserToPlugIn)
     unschedule(checkThenTurnOnSwitch)
