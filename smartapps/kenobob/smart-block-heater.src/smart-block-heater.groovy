@@ -80,8 +80,8 @@ def initialize() {
     //Schedule back up the daily check
     createDailyScheduler()
 	
-    //TODO Remove after testing
-    createOneTimeSchedulers()
+    //Process current low temp to see if we need to schedule something
+    processTemperature(getCurrentLowTemp())
 	
     log.trace("End Initialize")
 }
@@ -190,6 +190,8 @@ def processTemperature(def temperatureToProcess){
         if(state.lastActiveScheduleDate == null){
             log.info("Temperature is below threshold")
             createOneTimeSchedulers()
+            
+            state.lastActiveScheduleDate = convertDatetoISODateString(rightNowDate)
         } else if(!isSameDay(convertISODateStringToDate(state.lastActiveScheduleDate), rightNowDate) && !isSameDay(convertISODateStringToDate(state.onTimeRunOnceDate), rightNowDate)){
             //if(state.lastActiveScheduleDate != todaysDate && state.onTimeRunOnceDate != todaysDate){
             //The low tempurature is going to be cold enough we want to turn on switch.
@@ -359,7 +361,7 @@ private def CalculateOnTime2(){
     
     
 	
-    log.debug("CalculateOnTime2 - Settings Car Start Time: ${convertISODateStringToDate(carStartTime)}")
+    //log.debug("CalculateOnTime2 - Settings Car Start Time: ${convertISODateStringToDate(carStartTime)}")
     //Make sure date month and year are correct
     carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE))
     carOnTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
