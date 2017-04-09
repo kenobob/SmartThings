@@ -106,7 +106,7 @@ private def createSubscriptions()
 }
 
 ////////////////////////////////////////////////////////////////
-///// *********************Subscriptions **********************/
+///// *************Subscription Event Handlers ****************/
 ////////////////////////////////////////////////////////////////
 def lowForecastedTemperatureChanges(evt){
     
@@ -151,19 +151,9 @@ private def createOneTimeSchedulers(){
     log.debug("Block Heater On Time: ${onTime}")
     
     createNotificationScheduler()
-	
-    //    def isTypeOfDate = (onTime instanceof Date)
-    //    log.info("onTIme is Type of Date? - ${isTypeOfDate}")
-    //    java.lang.String onTimeString = convertDatetoISODateString(onTime)
-    //    log.debug("OnTime String ${onTimeString}")
-    //    if(onTimeString && onTimeString instanceof String){
+    
     //create scheduler to turn on block hearter(s)
     runOnce(onTime, checkThenTurnOnSwitch)
-    //    } else {
-    //        log.error("On Time String is Maybe NOt INstace of String")
-    //        log.error("On Time String is ${onTimeString}")
-    //        runOnce(onTime, checkThenTurnOnSwitch)
-    //    }
 	
     state.onTimeRunOnceDate =  convertDatetoISODateString(onTime)
     log.trace("End createOneTimeSchedulers")
@@ -185,7 +175,7 @@ def createNotificationScheduler(){
 }
 
 ////////////////////////////////////////////////////////////////
-///// ************************* Events ************************/
+///// ********************* Calculations **********************/
 ////////////////////////////////////////////////////////////////
 
 // TODO: Fix Date checking and state saving
@@ -224,6 +214,10 @@ def processTemperature(def temperatureToProcess){
 			
     }
 }
+
+////////////////////////////////////////////////////////////////
+///// *************** Scheduled Job Handlers ******************/
+////////////////////////////////////////////////////////////////
 
 def checkThenTurnOnSwitch(){
     log.trace("Executing checkThenTurnOnSwitch")
@@ -502,6 +496,7 @@ private def convertDateToCalendar(Date date){
     return cal
 }
 
+//TODO: Do I even need this anymore?
 private def getJustDate(date){
 	
     //Quick null check
