@@ -79,7 +79,7 @@ def initialize() {
     createDailyScheduler()
 	
     //TODO Remove after testing
-    createSchedulers()
+    createOneTimeSchedulers()
 	
     log.trace("End Initialize")
 }
@@ -118,7 +118,7 @@ def lowForecastedTemperatureChanges(evt){
             //The low tempurature is going to be cold enough we want to turn on switch.
             log.info("state.lastActiveScheduleDate: ${state.lastActiveScheduleDate}, todays date: ${todaysDate}, state.onTimeRunOnceDate: ${state.onTimeRunOnceDate}")
             log.info("Forecast Low is going to be below threshold")
-            createSchedulers()
+            createOneTimeSchedulers()
 			
             //Save last scheduled date for later comparisons.
             state.lastActiveScheduleDate = convertDatetoISODateString(getJustDate(new Date()))
@@ -152,8 +152,8 @@ private def createDailyScheduler(){
     log.trace("End createDailyScheduler")
 }
 
-private def createSchedulers(){
-    log.trace("Executing createSchedulers")
+private def createOneTimeSchedulers(){
+    log.trace("Executing createOneTimeSchedulers")
 	
     //I'm out of scheduled events somehow, clear them out!
     if(!canSchedule()){
@@ -182,7 +182,7 @@ private def createSchedulers(){
     //    }
 	
     state.onTimeRunOnceDate =  convertDatetoISODateString(getJustDate(onTime))
-    log.trace("End createSchedulers")
+    log.trace("End createOneTimeSchedulers")
 }
 
 def createNotificationScheduler(){
