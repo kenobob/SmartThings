@@ -73,6 +73,8 @@ def initialize()
     //Subscribe to Sensor Changes
     log.debug("Subscribing Contact Sensor")
     subscribe(contactSensor, "contact", contactChangeEventHandler)
+    
+    //TODO Subscribe to Humidity for when contact is left open
 	
 	
     logtrace("End Executing 'initialize'")
@@ -84,12 +86,18 @@ def contactChangeEventHandler(evt)
     log.debug "The value of this event is different from its previous value: ${evt.isStateChange()}"
     
     if(evt.isStateChange() && notificationHumidity <= getHumidity()){
-        if(isContactSensorOpen){
+        if(isContactSensorOpen()){
             //Set Scheduler
             //evt.getDisplayName() the user-friendly name of the source of this event.
-            def eventData = [DisplayName: evt.getDisplayName()]
-            runIn(minutes*60, notifyUser, [overwrite: true, data: eventData])
+            //def eventData = [DisplayName: evt.getDisplayName()]
+            
+            log.debug("Contact Open - High Humidity: Schedule Notification for ${minutes*60} seconds")
+            
+            runIn(minutes*60, notifyUser, [overwrite: true])
+            
+            //TODO: Create Reminder to close
         } else {
+            log.debug("Contact Closed: Un-schedule any active notifications")
             //Cancel Scheduler
             unschedule(notifyUser)
         }
@@ -128,6 +136,7 @@ def getHumidity(){
 }
 
 def isContactSensorOpen(){
+    log.info("Contact Sensor is Currently ${contactSensor.latestValue("contact")}")
     if(contactSensor.latestValue("contact")=="open"){
         return true
     } else {
