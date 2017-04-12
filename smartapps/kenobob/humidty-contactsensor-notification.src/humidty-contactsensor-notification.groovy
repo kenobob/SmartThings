@@ -237,6 +237,12 @@ private def unscheduleNotificaitons(){
     unschedule(remindUser)
     unschedule(remindUserHumidityEvent)
     
+    //Check to see if still can Schedule more events
+    if(!canSchedule()){
+        // remove all scheduled executions for this SmartApp
+        unschedule()
+    }
+    
     //Reset Variables
     state.hasLeftDoorOpen = null;
     logtrace("End Executing 'unscheduleNotificaiton'")
