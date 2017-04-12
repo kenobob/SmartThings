@@ -41,7 +41,8 @@ preferences {
             input "sendPushMessage", "enum", title: "Send a push notification?", options: ["Yes", "No"], required: false
             input "phoneNumber", "phone", title: "Send a Text Message?", required: false
         }
-        input("notificationText", type: "text", title: "What woul dyou like your notification to say?", required: true)
+        input("notificationText", type: "text", title: "What would you like your notification to say?", required: true)
+        input("notificationHumidtyDoorLeftOpenText", type: "text", title: "What would you like the first part of your notification to say for Humidity got High, Left Open Reminders?", required: true)
     }
 }
 
@@ -70,15 +71,54 @@ def initialize()
     // unsubscribe all listeners.
     unsubscribe()
     
+    //Reset variables
+    state.hasLeftDoorOpen = null
+    
     //Subscribe to Sensor Changes
     log.debug("Subscribing Contact Sensor")
     subscribe(contactSensor, "contact", contactChangeEventHandler)
+    
+    log.debug("Subscribing Humidity Sensor")
+    subscribe(humiditySensor, "humidity", humidityChangeEventHandler)
     
     //TODO Subscribe to Humidity for when contact is left open
 	
 	
     logtrace("End Executing 'initialize'")
 }
+
+def humidityChangeEventHandler(evt){
+    logtrace("Executing 'humidityChangeEventHandler'")
+    // did the value of this event change from its previous state?
+    log.debug "The value of this event is different from its previous value: ${evt.isStateChange()}"
+    
+    if(evt.isStateChange() && notificationHumidity <= getHumidity()){
+        if(!state.hasLeftDoorOpen){
+            log.debug("State Shows we have no reminder for Humidity Change. Lets create one.")
+            //Set App State
+            state.hasLeftDoorOpen = true;
+            
+            def notificationWords = "${notificationHumidtyDoorLeftOpenText} The Humidity is now ${getHumidity()}% in the area."
+            //Reminder to close
+            def reminderEventData =  [
+                sendPushMessage: null,
+                phoneNumber: null,
+                notificationText: null
+            ]
+            
+            reminderEventData.phoneNumber = phoneNumber
+            reminderEventData.sendPushMessage = sendPushMessage
+            reminderEventData.notificationText = notificationWords
+            
+            //Set 1/2 Hour Reminders - Will handle it's own unscheduling
+            runEvery30Minutes(remindUserHumidityEvent, [data: reminderEventData])
+        }
+        
+    }
+    
+    logtrace("End Executing 'humidityChangeEventHandler'")
+}
+
 def contactChangeEventHandler(evt)
 {
     logtrace("Executing 'contactChangeEventHandler'")
@@ -127,6 +167,18 @@ def contactChangeEventHandler(evt)
     logtrace("End Executing 'contactChangeEventHandler'")
 }
 
+
+def remindUserHumidityEvent(data){
+    logtrace("Executing 'remindUserHumidityEvent'")
+    if(notificationHumidity <= getHumidity()){
+        notifyUser(data)
+    } else {
+        //Humidity Levels dropped. We can stop being annoying
+        log.info("Humidity Levels dropped to ${getHumidity()} - We can cancel the notifications")
+        unscheduleNotificaitons()
+    }
+    logtrace("End Executing 'remindUserHumidityEvent'")
+}
 
 def remindUser(data){
     logtrace("Executing 'remindUser'")
@@ -183,6 +235,10 @@ private def unscheduleNotificaitons(){
     //Cancel Scheduler
     unschedule(notifyUser)
     unschedule(remindUser)
+    unschedule(remindUserHumidityEvent)
+    
+    //Reset Variables
+    state.hasLeftDoorOpen = null;
     logtrace("End Executing 'unscheduleNotificaiton'")
 }
 
