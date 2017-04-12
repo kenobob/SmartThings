@@ -114,6 +114,8 @@ def contactChangeEventHandler(evt)
             reminderEventData.sendPushMessage = sendPushMessage
             reminderEventData.notificationText = notificationText
             
+            //Set 1/2 Hour Reminders
+            runEvery30Minutes(remindUser, [data: reminderEventData])
         } else {
             log.debug("Contact Closed: Un-schedule any active notifications")
             unscheduleNotificaiton()
