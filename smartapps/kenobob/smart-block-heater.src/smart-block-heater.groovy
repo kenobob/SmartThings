@@ -171,9 +171,34 @@ private def createOneTimeSchedulers(){
     
     //create scheduler to turn on block hearter(s)
     runOnce(onTime, checkThenTurnOnSwitch)
+    
+    createStarTimeScheduler(onTime)
 	
     state.onTimeRunOnceDate =  convertDatetoISODateString(onTime)
     log.trace("End createOneTimeSchedulers")
+}
+
+def createStarTimeScheduler(onTime){
+    def onTimeCalendar = convertDateToCalendar(onTime)
+    def startTimeCalendar = convertDateToCalendar(carStartTime)
+    
+    startTimeCalendar.set(Calendar.DATE, onTimeCalendar.get(Calendar.DATE))
+    startTimeCalendar.set(Calendar.YEAR, onTimeCalendar.get(Calendar.YEAR))
+    startTimeCalendar.set(Calendar.MONTH, onTimeCalendar.get(Calendar.MONTH))
+    
+    if(onTimeCalendar.get(Calendar.HOUR_OF_DAY) > startTimeCalendar.get(Calendar.HOUR_OF_DAY))
+    {
+        //Assume start day is tomorrow
+        log.debug("Start Time is Tomorrow")
+        
+        startTimeCalendar.set(Calendar.DATE, onTimeCalendar.get(Calendar.DATE) +1)
+    }
+    def startTimeDate = startTimeCalendar.getTime()
+    
+    log.info("Start Time Scheduler: ${startTimeDate}")
+    
+    //create scheduler to reset variables
+    runOnce(startTimeDate, clearVariablesAtStartTime)
 }
 
 def createNotificationScheduler(){
@@ -255,8 +280,7 @@ def checkThenTurnOnSwitch(){
     }
 	
     state.onTimeRunOnceDate = null
-    //Not sure if this will cause problems. From the time the heater turns on to the time you need to start...
-    state.lastActiveScheduleDate = null
+    
 	
     log.trace("End checkThenTurnOnSwitch")
 }
@@ -279,6 +303,14 @@ def notifyUserToPlugIn(){
         sendSms(phoneNumber, "Plug in your block heater.")
     }
     log.trace("End notifyUserToPlugIn")
+}
+
+def clearVariablesAtStartTime(){
+    //Should be null, but just in case    
+    state.onTimeRunOnceDate = null
+    
+    //Need to clear so scheduler works
+    state.lastActiveScheduleDate = null
 }
 
 
@@ -328,8 +360,10 @@ private def isQuietHours(){
         //Assuming seperate days
         if(startMinutes < currentMinutes || currentMinutes < endMinutes){
             //Assuming we crossed one day into the future
+            sendNotificationEvent("isQuietHours - We crossed into the future: True:  Minutes: start: ${startMinutes} end: ${endMinutes} current: ${currentMinutes}")
             return true
         } else{
+            sendNotificationEvent("isQuietHours - We crossed into the future: False:  Minutes: start: ${startMinutes} end: ${endMinutes} current: ${currentMinutes}")
             return false
         }
     } else {
@@ -337,8 +371,10 @@ private def isQuietHours(){
         //Assume the same day
         
         if(startMinutes < currentMinutes && currentMinutes < endMinutes){
+            sendNotificationEvent("isQuietHours - Same Day: True:  Minutes: start: ${startMinutes} end: ${endMinutes} current: ${currentMinutes}")
             return true
         } else {
+            sendNotificationEvent("isQuietHours - Same Day: False:  Minutes: start: ${startMinutes} end: ${endMinutes} current: ${currentMinutes}")
             return false
         }
     }
@@ -354,7 +390,10 @@ private def CalculateOnTime2(){
      * - If even triggers before midnight, but after car start time, assume tomrrow
      * - If even triggers after midnight, but before car start time, assume today
      */
-	
+    
+    //grab the local timezone
+    //def localTimeZone = location.timeZone
+    
     //Grab the current time
     def currentTimeCal = convertDateToCalendar(new Date())
 	
@@ -362,7 +401,7 @@ private def CalculateOnTime2(){
     def carStartTimeCal = convertDateToCalendar(convertISODateStringToDate(carStartTime))
 	
     //Convert the notification time to Calendar
-    def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
+    //def beforeBedNOtificationCal = convertDateToCalendar(convertISODateStringToDate(beforeBedNotificationTime))
 	
     def carOnTimeCal = convertDateToCalendar(new Date())
 	
@@ -373,7 +412,10 @@ private def CalculateOnTime2(){
     if(//currentTimeCal.get(Calendar.HOUR_OF_DAY) < beforeBedNOtificationCal.get(Calendar.HOUR_OF_DAY) && 
         currentTimeCal.get(Calendar.HOUR_OF_DAY) > carStartTimeCal.get(Calendar.HOUR_OF_DAY))
     {
+        log.debug("current hour is great than car start time hour: ${currentTimeCal.get(Calendar.HOUR_OF_DAY)} > ${carStartTimeCal.get(Calendar.HOUR_OF_DAY)}")
         isCarStartTomorrow = true
+    } else {
+        log.debug("Same Day, this must not be true: ${currentTimeCal.get(Calendar.HOUR_OF_DAY)} > ${carStartTimeCal.get(Calendar.HOUR_OF_DAY)}")
     }
     
     
@@ -393,8 +435,21 @@ private def CalculateOnTime2(){
 	
     //Correct any date offset needed
     if(isCarStartTomorrow && carOnTimeCal.get(Calendar.DATE) <= currentTimeCal.get(Calendar.DATE)){
-        log.debug("Move Date to tomorrow")
-        carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+        //We know the car turns on tomorrow, is block heater on time tomorrow though?
+        //Lets get the car start time on the right date
+        carStartTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+        carStartTimeCal.set(Calendar.MONTH, currentTimeCal.get(Calendar.MONTH))
+        carStartTimeCal.set(Calendar.YEAR, currentTimeCal.get(Calendar.YEAR))
+        //Calculate out the correct date
+        def tempCarStartTimeDate = carStartTimeCal.getTime()
+        log.info("Car Start Time: ${tempCarStartTimeDate}")
+        if(!timeOfDayIsBetween(currentTimeCal.getTime(), tempCarStartTimeDate, carOnTimeCal.getTime(), TimeZone.getTimeZone("UTC")))
+        {
+            log.debug("CalculateOnTime - Move Date to tomorrow")
+            carOnTimeCal.set(Calendar.DATE, currentTimeCal.get(Calendar.DATE)+1)
+        } else {
+            log.debug("CalculateOnTime - Blockheater on time is the correct day.")
+        }
     }
 	
     //Check for scheduling in the past problems.
@@ -414,6 +469,8 @@ private def CalculateOnTime2(){
     log.debug("CalculateOnTime2 - Blockheater On Time: ${rtvDate}")
     
     //log.info("Start Time: ${rtvDate}")
+    
+    log.debug("currentTimeCal: ${currentTimeCal.getTime()} carStartTimeCal: ${carStartTimeCal.getTime()} carOnTimeCal: ${carOnTimeCal.getTime()} ")
 	
     log.trace("End CalculateOnTime2")
     return rtvDate
@@ -461,9 +518,8 @@ private def isSameDay(Calendar cal1, Calendar cal2){
     if(cal1 != null && cal2 !=null){
         //Convert Timzeones to Local (Should be UTC coming in...)
         def localTimeZone = location.timeZone
-        log.debug("Local Time Zone: ${localTimeZone}")
         cal1.setTimeZone(localTimeZone)
-        cal1.setTimeZone(localTimeZone)
+        cal2.setTimeZone(localTimeZone)
         
         //check month, day and year to make sure it's the same day.
         if(
@@ -562,9 +618,10 @@ private def clearAllSchedules(){
 private def clearTodyasSchedules(){
     log.trace("Executing clearTodyasSchedules")
     log.info("Clearing Schedulers for Daily on and Notifications ")
-    // unschedule the notification
+    // unschedule the schedulers
     unschedule(notifyUserToPlugIn)
     unschedule(checkThenTurnOnSwitch)
+    unschedule(clearVariablesAtStartTime)
     
     //Reset State Elements
     state.lastActiveScheduleDate = null 
