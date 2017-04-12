@@ -92,7 +92,7 @@ def humidityChangeEventHandler(evt){
     // did the value of this event change from its previous state?
     log.debug "The value of this event is different from its previous value: ${evt.isStateChange()}"
     
-    if(evt.isStateChange() && notificationHumidity <= getHumidity()){
+    if(evt.isStateChange() && notificationHumidity <= getHumidity() && isContactSensorOpen()){
         if(!state.hasLeftDoorOpen){
             log.debug("State Shows we have no reminder for Humidity Change. Lets create one.")
             //Set App State
