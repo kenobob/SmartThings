@@ -127,13 +127,6 @@ def contactChangeEventHandler(evt)
     logtrace("End Executing 'contactChangeEventHandler'")
 }
 
-private def unscheduleNotificaitons(){
-    logtrace("Executing 'unscheduleNotificaiton'")
-    //Cancel Scheduler
-    unschedule(notifyUser)
-    unschedule(remindUser)
-    logtrace("End Executing 'unscheduleNotificaiton'")
-}
 
 def remindUser(data){
     logtrace("Executing 'remindUser'")
@@ -183,6 +176,14 @@ private def isContactSensorOpen(){
     } else {
         return false
     }
+}
+
+private def unscheduleNotificaitons(){
+    logtrace("Executing 'unscheduleNotificaiton'")
+    //Cancel Scheduler
+    unschedule(notifyUser)
+    unschedule(remindUser)
+    logtrace("End Executing 'unscheduleNotificaiton'")
 }
 
 private def logtrace(message){
