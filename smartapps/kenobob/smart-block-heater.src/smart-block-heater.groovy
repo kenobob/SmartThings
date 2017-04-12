@@ -306,11 +306,13 @@ def notifyUserToPlugIn(){
 }
 
 def clearVariablesAtStartTime(){
+    log.trace("Executing clearVariablesAtStartTime")
     //Should be null, but just in case    
     state.onTimeRunOnceDate = null
     
     //Need to clear so scheduler works
     state.lastActiveScheduleDate = null
+    log.trace("End clearVariablesAtStartTime")
 }
 
 
