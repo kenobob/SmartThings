@@ -113,10 +113,10 @@ def contactChangeEventHandler(evt)
             reminderEventData.phoneNumber = phoneNumber
             reminderEventData.sendPushMessage = sendPushMessage
             reminderEventData.notificationText = notificationText
+            
         } else {
             log.debug("Contact Closed: Un-schedule any active notifications")
-            //Cancel Scheduler
-            unschedule(notifyUser)
+            unscheduleNotificaiton()
         }
     } else {
         log.debug("State: ${evt.isStateChange()} Humidity: ${getHumidity()}. We can ignore")
@@ -124,6 +124,26 @@ def contactChangeEventHandler(evt)
     
 	
     logtrace("End Executing 'contactChangeEventHandler'")
+}
+
+private def unscheduleNotificaiton(){
+    logtrace("Executing 'unscheduleNotificaiton'")
+    //Cancel Scheduler
+    unschedule(notifyUser)
+    unschedule(remindUser)
+    logtrace("End Executing 'unscheduleNotificaiton'")
+}
+
+def remindUser(data){
+    logtrace("Executing 'remindUser'")
+    if(notificationHumidity <= getHumidity()){
+        notifyUser(data)
+    } else {
+        //Humidity Levels dropped. We can stop being annoying
+        log.info("Humidity Levels dropped to ${getHumidity()} - We can cancel the notifications")
+        unscheduleNotificaiton()
+    }
+    logtrace("End Executing 'remindUser'")
 }
 
 def notifyUser(data){
