@@ -89,13 +89,30 @@ def contactChangeEventHandler(evt)
         if(isContactSensorOpen()){
             //Set Scheduler
             //evt.getDisplayName() the user-friendly name of the source of this event.
-            //def eventData = [DisplayName: evt.getDisplayName()]
+            def eventData =  [
+                sendPushMessage: null,
+                phoneNumber: null,
+                notificationText: null
+            ]
+            
+            eventData.sendPushMessage = sendPushMessage
+            eventData.notificationText = notificationText
+            //eventData.phoneNumber = phoneNumber
             
             log.debug("Contact Open - High Humidity: Schedule Notification for ${minutes*60} seconds")
             
-            runIn(minutes*60, notifyUser, [overwrite: true])
+            runIn(minutes*60, notifyUser, [overwrite: true, data: eventData])
             
             //TODO: Create Reminder to close
+            def reminderEventData =  [
+                sendPushMessage: null,
+                phoneNumber: null,
+                notificationText: null
+            ]
+            
+            reminderEventData.phoneNumber = phoneNumber
+            reminderEventData.sendPushMessage = sendPushMessage
+            reminderEventData.notificationText = notificationText
         } else {
             log.debug("Contact Closed: Un-schedule any active notifications")
             //Cancel Scheduler
@@ -111,19 +128,22 @@ def contactChangeEventHandler(evt)
 
 def notifyUser(data){
     logtrace("Executing 'notifyUser'")
-    if(sendPushMessage == "Yes" || phoneNumber != null){
+    log.debug("Notificaiton Data: ${data}")
+    
+    if(data.sendPushMessage == "Yes" || data.phoneNumber){
         log.debug("Notifications Turned on")
         def options = null
-        if(sendPushMessage == "Yes" && phoneNumber != null) {
-            options = [method: "both", phone: phoneNumber]
-        } else if(sendPushMessage == "Yes"){
+        
+        if(data.sendPushMessage == "Yes" && data.phoneNumber) {
+            options = [method: "both", phone: data.phoneNumber]
+        } else if(data.sendPushMessage == "Yes"){
             options = [method: "push"]
         } else {
-            options = [method: "phone", phone: phoneNumber]
+            options = [method: "phone", phone: data.phoneNumber]
         }
         log.debug("Options for Notification: ${options}")
         
-        sendNotification(notificationText, options)
+        sendNotification(data.notificationText, options)
     } else {
         log.error("No notification settings selected")
     }
