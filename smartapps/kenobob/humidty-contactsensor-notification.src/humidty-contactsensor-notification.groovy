@@ -97,7 +97,6 @@ def contactChangeEventHandler(evt)
             
             eventData.sendPushMessage = sendPushMessage
             eventData.notificationText = notificationText
-            //eventData.phoneNumber = phoneNumber
             
             log.debug("Contact Open - High Humidity: Schedule Notification for ${minutes*60} seconds")
             
@@ -173,11 +172,11 @@ def notifyUser(data){
     logtrace("End Executing 'notifyUser'")
 }
 
-def getHumidity(){
+private def getHumidity(){
     humiditySensor.latestValue("humidity")
 }
 
-def isContactSensorOpen(){
+private def isContactSensorOpen(){
     log.info("Contact Sensor is Currently ${contactSensor.latestValue("contact")}")
     if(contactSensor.latestValue("contact")=="open"){
         return true
