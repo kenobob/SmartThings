@@ -124,7 +124,7 @@ def lockChangeEventHandler(evt)
 
 def checkToLockTheDoor(data){
     logtrace("Executing 'checkToLockTheDoor'")
-    log.debug(data)
+    log.debug("checkToLockTheDoor Data: ${data}")
     def elapsedContactOpenTime = durationBetweenDatesInMinutes(new Date(),convertISODateStringToDate(state.contectOpenRawDate))
     def elapsedUnlockedTime = durationBetweenDatesInMinutes(new Date(), convertISODateStringToDate(state.doorUnlockedRawDate))
     
@@ -137,9 +137,12 @@ def checkToLockTheDoor(data){
         && data.minutesDoorClosedData <= elapsedContactOpenTime){
         //The Contact Sensor is Closed, the door is unlocked, and the 2 time requirements are met
         //Lets Lock the Door!!
+        log.info("Locking the Door")
         doorLock.lock()
         
         //Lets let the lock event fire to kill this job, to make sure the door actually locks.
+    } else {
+        log.debug("Conditions not met to lock the door")
     }
     
     logtrace("End Executing 'checkToLockTheDoor'")
