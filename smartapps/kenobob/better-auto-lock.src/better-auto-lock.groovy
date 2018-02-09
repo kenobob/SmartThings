@@ -63,8 +63,8 @@ def initialize() {
     //Reset variables
     //state.doorIsUnlocked = null
     state.schedulerActive = null
-    state.contectOpenRawDate = now()
-    state.doorUnlockedRawDate = now()
+    state.contectOpenRawDate = new Date()
+    state.doorUnlockedRawDate = new Date()
     
     //Subscribe to Sensor Changes
     log.debug("Subscribing Contact Sensor")
@@ -73,7 +73,8 @@ def initialize() {
     //log.debug("Subscribing Door Lock")
     subscribe(doorLock, "lock", lockChangeEventHandler)
 	
-	
+    //TODO: Check to see if door is in state to start scheduler
+        log.info(durationBetweenDatesInMinutes(new Date(), new Date()))
     logtrace("End Executing 'initialize'")
 }
 
@@ -87,23 +88,25 @@ def lockChangeEventHandler(evt)
         //If the Door is Unlocked, lets do something
         if(!isDoorLocked()){
             
-            state.doorUnlockedRawDate = now()
+            state.doorUnlockedRawDate = new Date()
             
             if(state.schedulerActive != true){
                 //Kick Off Door Lock Scheduler
                 //Reminder to close
                 def doorLockCheckData =  [
-                    minutesUnlocked: null,
-                    minutesDoorClosed: null
+                    minutesUnlockedData: null,
+                    minutesDoorClosedData: null
                 ]
             
-                reminderEventData.minutesUnlocked = minutesUnlocked
-                reminderEventData.minutesDoorClosed = minutesDoorClosed
+                doorLockCheckData.minutesUnlockedData = minutesUnlocked
+                doorLockCheckData.minutesDoorClosedData = minutesDoorClosed
+                
             
                 //Set check for every 5 minutes
                 runEvery5Minutes(checkToLockTheDoor, [data: doorLockCheckData])
                 
-                state.schedulerActive = true
+                state.schedulerActive = true                
+                log.debug("checkToLockTheDoorScheduler Scheduled with Data: ${doorLockCheckData}")
             }
             
         } else {
@@ -120,17 +123,18 @@ def lockChangeEventHandler(evt)
 }
 
 def checkToLockTheDoor(data){
-    
-    def elapsedContactOpenTime = now() - state.contectOpenRawDate.time
-    def elapsedUnlockedTime = now() - state.doorUnlockedRawDate.time    
+    logtrace("Executing 'checkToLockTheDoor'")
+    log.debug(data)
+    def elapsedContactOpenTime = durationBetweenDatesInMinutes(new Date(), new Date(state.contectOpenRawDate))
+    def elapsedUnlockedTime = durationBetweenDatesInMinutes(new Date(), new Date(state.doorUnlockedRawDate))
     
     log.debug("Elapsed Contact Sensor Open Time: ${elapsedContactOpenTime}")
     log.debug("Elapsed time since door unlcoked: ${elapsedUnlockedTime}")
     
     if(!isContactSensorOpen() 
         && !isDoorLocked()
-        && data.minutesUnlocked <= elapsedUnlockedTime
-        && data.minutesDoorClosed <= elapsedContactOpenTime){
+        && data.minutesUnlockedData <= elapsedUnlockedTime
+        && data.minutesDoorClosedData <= elapsedContactOpenTime){
         //The Contact Sensor is Closed, the door is unlocked, and the 2 time requirements are met
         //Lets Lock the Door!!
         doorLock.lock()
@@ -138,6 +142,31 @@ def checkToLockTheDoor(data){
         //Lets let the lock event fire to kill this job, to make sure the door actually locks.
     }
     
+    logtrace("End Executing 'checkToLockTheDoor'")
+}
+
+private def durationBetweenDatesInMinutes(Date date1, Date date2){
+    def cal1 = convertDateToCalendar2(date1)
+    def cal2 = convertDateToCalendar2(date2)
+    def cal1MS = cal1.getTimeInMillis()
+    def cal2MS = cal2.getTimeInMillis()
+    return  (cal1MS- cal2MS)/60000
+}
+
+private def convertDateToCalendar2(Date date){
+    def cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+    cal.setTime(date)
+	
+    //Now Set time from date, have to do it manually - Assume date coming in has been converted to UTC
+    //    cal.set(Calendar.DATE, date.getDate())
+    //    cal.set(Calendar.MONTH, date.getMonth())
+    //    cal.set(Calendar.YEAR, date.getYear())
+    //    cal.set(Calendar.HOUR_OF_DAY, date.getHours())
+    //    cal.set(Calendar.MINUTE, date.getMinutes())
+    //cal.set(Calendar.SECOND, 0)
+    //cal.set(Calendar.MILLISECOND, 0)
+    
+    return cal
 }
 
 private def unscheduleCheckToLockTheDoor(){
@@ -160,7 +189,7 @@ private def unscheduleCheckToLockTheDoor(){
 def contactChangeEventHandler(evt)
 {
     logtrace("Executing 'contactChangeEventHandler'")
-    state.contectOpenRawDate = now()
+    state.contectOpenRawDate = new Date()
 
     logtrace("End Executing 'contactChangeEventHandler'")
 }
