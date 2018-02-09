@@ -63,8 +63,8 @@ def initialize() {
     //Reset variables
     //state.doorIsUnlocked = null
     state.schedulerActive = null
-    state.contectOpenRawDate = new Date()
-    state.doorUnlockedRawDate = new Date()
+    state.contectOpenRawDate = convertDatetoISODateString(new Date())
+    state.doorUnlockedRawDate = convertDatetoISODateString(new Date())
     
     //Subscribe to Sensor Changes
     log.debug("Subscribing Contact Sensor")
@@ -88,7 +88,7 @@ def lockChangeEventHandler(evt)
         //If the Door is Unlocked, lets do something
         if(!isDoorLocked()){
             
-            state.doorUnlockedRawDate = new Date()
+            state.doorUnlockedRawDate = convertDatetoISODateString(new Date())
             
             if(state.schedulerActive != true){
                 //Kick Off Door Lock Scheduler
@@ -125,8 +125,8 @@ def lockChangeEventHandler(evt)
 def checkToLockTheDoor(data){
     logtrace("Executing 'checkToLockTheDoor'")
     log.debug(data)
-    def elapsedContactOpenTime = durationBetweenDatesInMinutes(new Date(), new Date(state.contectOpenRawDate))
-    def elapsedUnlockedTime = durationBetweenDatesInMinutes(new Date(), new Date(state.doorUnlockedRawDate))
+    def elapsedContactOpenTime = durationBetweenDatesInMinutes(new Date(),convertISODateStringToDate(state.contectOpenRawDate))
+    def elapsedUnlockedTime = durationBetweenDatesInMinutes(new Date(), convertISODateStringToDate(state.doorUnlockedRawDate))
     
     log.debug("Elapsed Contact Sensor Open Time: ${elapsedContactOpenTime}")
     log.debug("Elapsed time since door unlcoked: ${elapsedUnlockedTime}")
@@ -169,6 +169,33 @@ private def convertDateToCalendar2(Date date){
     return cal
 }
 
+private def convertISODateStringToDate(String date){
+    try{
+        return Date.parse( "yyyy-MM-dd'T'HH:mm:ss.SSSX", date )
+    }catch(def e){
+        log.error(e)
+        return null
+    }
+}
+
+private def convertDatetoISODateString(Date date){
+    try{
+        log.debug("Convert Date to String: ${date}")
+        def formatter = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX")
+        
+        //formatter.setTimeZone(location.timeZone)
+        formatter.setTimeZone(TimeZone.getTimeZone("UTC"))
+                
+        def rtv = formatter.format(date)
+                
+        log.debug("Convert Date to String Converted: ${rtv}")
+        
+        return rtv
+    }catch(def e){
+        log.error(e)
+    }
+}
+
 private def unscheduleCheckToLockTheDoor(){
     logtrace("Executing 'unscheduleCheck'")
     //Cancel Scheduler
@@ -189,7 +216,7 @@ private def unscheduleCheckToLockTheDoor(){
 def contactChangeEventHandler(evt)
 {
     logtrace("Executing 'contactChangeEventHandler'")
-    state.contectOpenRawDate = new Date()
+    state.contectOpenRawDate = convertDatetoISODateString(new Date())
 
     logtrace("End Executing 'contactChangeEventHandler'")
 }
