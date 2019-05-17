@@ -277,13 +277,13 @@ private def getWeatherInfo(){
     	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
     	//Send Zip to WU Web Service
     	weather.Conditions = getTwcConditions(settings.zipCode)
-        weather.Forecast = getWeatherFeature("forecast", settings.zipCode)
+        weather.Forecast = getTwcForecast(settings.zipCode)
 		weather.Location = getTwcLocation(settings.zipCode)
     } else {
     	log.debug("Using system Provided Zip for WU Service.")
     	//Let the hub send it's assumed location.
     	weather.Conditions = getTwcConditions()
-        weather.Forecast = getWeatherFeature("forecast")
+        weather.Forecast = getTwcForecast()
 		weather.Location = getTwcLocation()
     }
     
@@ -364,33 +364,40 @@ private def setWeatherConditions(weatherConditions){
 
 private def setWeatherForecast(weatherForecast){
 
-    if(weatherForecast && weatherForecast.forecast && weatherForecast.forecast.simpleforecast && weatherForecast.forecast.simpleforecast.forecastday){
+    if(weatherForecast){
         //Grab the first day of the forecast
-        def forecastDay = weatherForecast.forecast.simpleforecast.forecastday[0]
+        def todayHigh = null
+		if(weatherForecast.temperatureMax){
+			todayHigh = weatherForecast.temperatureMax[0]
+		}
+		def todayLow = null
+		if(weatherForecast.temperatureMin){
+			todayLow = weatherForecast.temperatureMin[0]
+		}
         //WU sent information.
         //Temp High
-        if(forecastDay.high){
+        if(todayHigh){
             if(location.temperatureScale == "C") {
-                log.debug("High Temp ${forecastDay.high.celsius}")
-                sendEvent(name: "hightemperature", value: forecastDay.high.celsius, unit: "C")
+                log.debug("High Temp ${todayHigh}")
+                sendEvent(name: "hightemperature", value: todayHigh, unit: "C")
             } else {
-                log.debug("High Temp ${forecastDay.high.fahrenheit}")
-                sendEvent(name: "hightemperature", value: forecastDay.high.fahrenheit, unit: "F")
+                log.debug("High Temp ${todayHigh}")
+                sendEvent(name: "hightemperature", value: todayHigh, unit: "F")
             }
         }
         //Temp Low
-        if(forecastDay.low){
+        if(todayLow){
             if(location.temperatureScale == "C") {
-                log.debug("Low Temp ${forecastDay.low.celsius}")
-                sendEvent(name: "lowtemperature", value: forecastDay.low.celsius, unit: "C")
+                log.debug("Low Temp ${todayLow}")
+                sendEvent(name: "lowtemperature", value: todayLow, unit: "C")
             } else {
-                log.debug("Low Temp ${forecastDay.low.fahrenheit}")
-                sendEvent(name: "lowtemperature", value: forecastDay.low.fahrenheit, unit: "F")
+                log.debug("Low Temp ${todayLow}")
+                sendEvent(name: "lowtemperature", value: todayLow, unit: "F")
             }
         } 
     } else {
     	//Weather Underground did not return any weather information.
-    	log.warn("Unable to get current weather conditions from Weather Underground API.")
+    	log.warn("Unable to get current weather conditions from Weather Channel API.")
     }
 }
 
