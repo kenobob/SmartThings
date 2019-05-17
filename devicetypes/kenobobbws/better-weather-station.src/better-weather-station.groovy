@@ -274,13 +274,13 @@ private def getWeatherInfo(){
     
     //Grab the appropriate weather based on user's imput
     if(settings.zipCode){
-    	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
-    	//Send Zip to WU Web Service
+    	log.debug("Using user Provided Zip for TWC Service ${settings.zipCode}.")
+    	//Send Zip to TWC Web Service
     	weather.Conditions = getTwcConditions(settings.zipCode)
         weather.Forecast = getTwcForecast(settings.zipCode)
 		weather.Location = getTwcLocation(settings.zipCode)
     } else {
-    	log.debug("Using system Provided Zip for WU Service.")
+    	log.debug("Using system Provided Zip for TWC Service.")
     	//Let the hub send it's assumed location.
     	weather.Conditions = getTwcConditions()
         weather.Forecast = getTwcForecast()
@@ -339,8 +339,8 @@ private def setWeatherConditions(weatherConditions){
         }
         
         //Humidity
-        log.debug("Humidty ${obs.relativeHumidity.tokenize('%')[0].toInteger()}%")
-        sendEvent(name: "humidity", value: obs.relativeHumidity.tokenize('%')[0].toInteger(), unit: "%")
+        log.debug("Humidty ${obs.relativeHumidity}%")
+        sendEvent(name: "humidity", value: obs.relativeHumidity, unit: "%")
         
         
         //Weather Icon
@@ -374,7 +374,7 @@ private def setWeatherForecast(weatherForecast){
 		if(weatherForecast.temperatureMin){
 			todayLow = weatherForecast.temperatureMin[0]
 		}
-        //WU sent information.
+        //TWC sent information.
         //Temp High
         if(todayHigh){
             if(location.temperatureScale == "C") {
