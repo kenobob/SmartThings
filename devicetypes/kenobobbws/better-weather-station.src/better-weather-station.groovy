@@ -365,14 +365,23 @@ private def setWeatherConditions(weatherConditions){
 private def setWeatherForecast(weatherForecast){
 
     if(weatherForecast){
+		
         //Grab the first day of the forecast
         def todayHigh = null
 		if(weatherForecast.temperatureMax){
 			todayHigh = weatherForecast.temperatureMax[0]
+			//Grab Next Day
+			if(!todayHigh){
+				todayHigh = weatherForecast.temperatureMax[1]
+			}
 		}
 		def todayLow = null
 		if(weatherForecast.temperatureMin){
 			todayLow = weatherForecast.temperatureMin[0]
+			//Grab Next Day
+			if(!todayLow){
+				todayLow = weatherForecast.temperatureMin[1]
+			}
 		}
         //TWC sent information.
         //Temp High
@@ -384,7 +393,9 @@ private def setWeatherForecast(weatherForecast){
                 log.debug("High Temp ${todayHigh}")
                 sendEvent(name: "hightemperature", value: todayHigh, unit: "F")
             }
-        }
+        } else {
+			log.debug("High Temp NULL")
+		}
         //Temp Low
         if(todayLow){
             if(location.temperatureScale == "C") {
@@ -394,7 +405,9 @@ private def setWeatherForecast(weatherForecast){
                 log.debug("Low Temp ${todayLow}")
                 sendEvent(name: "lowtemperature", value: todayLow, unit: "F")
             }
-        } 
+        } else {
+			log.debug("Low Temp NULL")
+		}
     } else {
     	//Weather Underground did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Channel API.")
