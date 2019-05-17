@@ -271,50 +271,61 @@ private def getWeatherInfo(){
     if(settings.zipCode){
     	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
     	//Send Zip to WU Web Service
-    	weather.Conditions = getWeatherFeature("conditions", settings.zipCode)
+    	weather.Conditions = getTwcConditions(settings.zipCode)
         weather.Forecast = getWeatherFeature("forecast", settings.zipCode)
+		weather.Location = getTwcLocation(settings.zipCode)
     } else {
     	log.debug("Using system Provided Zip for WU Service.")
     	//Let the hub send it's assumed location.
-    	weather.Conditions = getWeatherFeature("conditions")
+    	weather.Conditions = getTwcConditions()
         weather.Forecast = getWeatherFeature("forecast")
+		weather.Location = getTwcLocation()
     }
     
     return weather
 }
 
+private def setWeatherLocaiton(weatherLocationInfo){
+	
+	if(weatherLocationInfo){
+        //location
+        log.debug("Location ${weatherLocationInfo.displayName}, ${weatherLocationInfo.adminDistrictCode} ${weatherLocationInfo.postalCode}")
+        sendEvent(name: "location", value: "${weatherLocationInfo.displayName}, ${weatherLocationInfo.adminDistrictCode} ${weatherLocationInfo.postalCode}")
+	}
+}
+
 private def setWeatherConditions(weatherConditions){
-    if(weatherConditions && weatherConditions.current_observation){
-    	def obs = weatherConditions.current_observation
-    	//WU sent information.
+    if(weatherConditions){
+    	def obs = weatherConditions
+    	//TWC sent information.
         if(location.temperatureScale == "C") {
             //Temp
-            log.debug("Temp ${obs.temp_c}C")
-            sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
+            log.debug("Temp ${obs.temperature}C")
+            sendEvent(name: "temperature", value: obs.temperature, unit: "C")
             //Temp - Feels like
-            log.debug("Feels Like ${obs.feelslike_c}C")
-            sendEvent(name: "feelsliketemperature", value: obs.feelslike_c, unit: "C")
+            log.debug("Feels Like ${obs.temperatureFeelsLike}C")
+            sendEvent(name: "feelsliketemperature", value: obs.temperatureFeelsLike, unit: "C")
             //Wind
-            log.debug("Wind speeds ${obs.wind_kph} KPH")
-            sendEvent(name: "wind", value: obs.wind_kph, unit: "kph")
-            log.debug("Wind Gusts ${obs.wind_gust_kph} KPH")
-            sendEvent(name: "windgust", value: obs.wind_gust_kph, unit: "kph")
+            log.debug("Wind speeds ${obs.windSpeed} KPH")
+            sendEvent(name: "wind", value: obs.windSpeed, unit: "kph")
+            log.debug("Wind Gusts ${obs.windGust} KPH")
+            sendEvent(name: "windgust", value: obs.windGust, unit: "kph")
         } else {
             //Temp
-            log.debug("Temp ${obs.temp_f}F")
-            sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
+            log.debug("Temp ${obs.temperature}F")
+            sendEvent(name: "temperature", value: obs.temperature, unit: "F")
             //Temp - Feels like
-            log.debug("Feels Like ${obs.feelslike_f}F")
-            sendEvent(name: "feelsliketemperature", value: obs.feelslike_f, unit: "F")
+            log.debug("Feels Like ${obs.temperatureFeelsLike}F")
+            sendEvent(name: "feelsliketemperature", value: obs.temperatureFeelsLike, unit: "F")
             //Wind            
-            log.debug("Wind speeds ${obs.wind_mph} MPH")
-            sendEvent(name: "wind", value: obs.wind_mph, unit: "mph")
-            log.debug("Wind Gusts ${obs.wind_gust_mph} MPH")   
-            sendEvent(name: "windgust", value: obs.wind_gust_mph, unit: "mph")
+            log.debug("Wind speeds ${obs.windSpeed} MPH")
+            sendEvent(name: "wind", value: obs.windSpeed, unit: "mph")
+            log.debug("Wind Gusts ${obs.windGust} MPH")   
+            sendEvent(name: "windgust", value: obs.windGust, unit: "mph")
         }
         
-        //Precip Notification - WU Sends Huge Decimal places, can't parse to int.
-        if(obs.precip_1hr_in.toDouble() > 0){
+        //Precip Notification - TWC Sends Huge Decimal places, can't parse to int.
+        if(obs.precip1Hour.toDouble() > 0){
             log.debug("Currently Wet");
             sendEvent(name: "water", value: "wet")
         } else {
@@ -323,12 +334,9 @@ private def setWeatherConditions(weatherConditions){
         }
         
         //Humidity
-        log.debug("Humidty ${obs.relative_humidity.tokenize('%')[0].toInteger()}%")
-        sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
+        log.debug("Humidty ${obs.relativeHumidity.tokenize('%')[0].toInteger()}%")
+        sendEvent(name: "humidity", value: obs.relativeHumidity.tokenize('%')[0].toInteger(), unit: "%")
         
-        //location
-        log.debug("Location ${obs.observation_location.full}")
-        sendEvent(name: "location", value: obs.observation_location.full)
         
         //Weather Icon
         def weatherIcon = obs.icon_url.split("/")[-1].split("\\.")[0]
@@ -336,17 +344,17 @@ private def setWeatherConditions(weatherConditions){
         sendEvent(name: "weatherIcon", value: weatherIcon, displayed: false)
         
         //Observation Time
-        log.debug(obs.observation_time)
-        sendEvent(name: "observedtime", value: obs.observation_time)
+        log.debug(obs.validTimeLocal)
+        sendEvent(name: "observedtime", value: obs.validTimeLocal)
         
         //UV Index
-        log.debug("UV Index ${obs.UV}")
-        sendEvent(name: "uv", value: obs.UV)
+        log.debug("UV Index ${obs.uvIndex}")
+        sendEvent(name: "uv", value: obs.uvIndex)
         
         
     } else {
-    	//Weather Underground did not return any weather information.
-    	log.warn("Unable to get current weather conditions from Weather Underground API.")
+    	//Weather Channel did not return any weather information.
+    	log.warn("Unable to get current weather conditions from Weather Channel API.")
     }
 }
 
@@ -388,6 +396,7 @@ def poll() {
         def weather = getWeatherInfo()
     
         setWeatherConditions(weather.Conditions)
+		setWeatherLocaiton(weather.Location)
         setWeatherForecast(weather.Forecast)
     }catch(all){
         log.error(all)
