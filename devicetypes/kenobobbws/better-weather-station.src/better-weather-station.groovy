@@ -155,50 +155,55 @@ metadata {
         }
         
         standardTile("weatherIcon", "device.weatherIcon", decoration: "flat") {
-            state "default", label: "No Weather Condition"
-            state "chanceflurries", icon:"st.custom.wu1.chanceflurries", label: ""
-            state "chancerain", icon:"st.custom.wu1.chancerain", label: ""
-            state "chancesleet", icon:"st.custom.wu1.chancesleet", label: ""
-            state "chancesnow", icon:"st.custom.wu1.chancesnow", label: ""
-            state "chancetstorms", icon:"st.custom.wu1.chancetstorms", label: ""
-            state "clear", icon:"st.custom.wu1.clear", label: ""
-            state "cloudy", icon:"st.custom.wu1.cloudy", label: ""
-            state "flurries", icon:"st.custom.wu1.flurries", label: ""
-            state "fog", icon:"st.custom.wu1.fog", label: ""
-            state "hazy", icon:"st.custom.wu1.hazy", label: ""
-            state "mostlycloudy", icon:"st.custom.wu1.mostlycloudy", label: ""
-            state "mostlysunny", icon:"st.custom.wu1.mostlysunny", label: ""
-            state "partlycloudy", icon:"st.custom.wu1.partlycloudy", label: ""
-            state "partlysunny", icon:"st.custom.wu1.partlysunny", label: ""
-            state "rain", icon:"st.custom.wu1.rain", label: ""
-            state "sleet", icon:"st.custom.wu1.sleet", label: ""
-            state "snow", icon:"st.custom.wu1.snow", label: ""
-            state "sunny", icon:"st.custom.wu1.sunny", label: ""
-            state "tstorms", icon:"st.custom.wu1.tstorms", label: ""
-            state "cloudy", icon:"st.custom.wu1.cloudy", label: ""
-            state "partlycloudy", icon:"st.custom.wu1.partlycloudy", label: ""
-            state "nt_chanceflurries", icon:"st.custom.wu1.nt_chanceflurries", label: ""
-            state "nt_chancerain", icon:"st.custom.wu1.nt_chancerain", label: ""
-            state "nt_chancesleet", icon:"st.custom.wu1.nt_chancesleet", label: ""
-            state "nt_chancesnow", icon:"st.custom.wu1.nt_chancesnow", label: ""
-            state "nt_chancetstorms", icon:"st.custom.wu1.nt_chancetstorms", label: ""
-            state "nt_clear", icon:"st.custom.wu1.nt_clear", label: ""
-            state "nt_cloudy", icon:"st.custom.wu1.nt_cloudy", label: ""
-            state "nt_flurries", icon:"st.custom.wu1.nt_flurries", label: ""
-            state "nt_fog", icon:"st.custom.wu1.nt_fog", label: ""
-            state "nt_hazy", icon:"st.custom.wu1.nt_hazy", label: ""
-            state "nt_mostlycloudy", icon:"st.custom.wu1.nt_mostlycloudy", label: ""
-            state "nt_mostlysunny", icon:"st.custom.wu1.nt_mostlysunny", label: ""
-            state "nt_partlycloudy", icon:"st.custom.wu1.nt_partlycloudy", label: ""
-            state "nt_partlysunny", icon:"st.custom.wu1.nt_partlysunny", label: ""
-            state "nt_sleet", icon:"st.custom.wu1.nt_sleet", label: ""
-            state "nt_rain", icon:"st.custom.wu1.nt_rain", label: ""
-            state "nt_sleet", icon:"st.custom.wu1.nt_sleet", label: ""
-            state "nt_snow", icon:"st.custom.wu1.nt_snow", label: ""
-            state "nt_sunny", icon:"st.custom.wu1.nt_sunny", label: ""
-            state "nt_tstorms", icon:"st.custom.wu1.nt_tstorms", label: ""
-            state "nt_cloudy", icon:"st.custom.wu1.nt_cloudy", label: ""
-            state "nt_partlycloudy", icon:"st.custom.wu1.nt_partlycloudy", label: ""
+            state "00", icon:"https://smartthings-twc-icons.s3.amazonaws.com/00.png", label: ""
+            state "01", icon:"https://smartthings-twc-icons.s3.amazonaws.com/01.png", label: ""
+            state "02", icon:"https://smartthings-twc-icons.s3.amazonaws.com/02.png", label: ""
+            state "03", icon:"https://smartthings-twc-icons.s3.amazonaws.com/03.png", label: ""
+            state "04", icon:"https://smartthings-twc-icons.s3.amazonaws.com/04.png", label: ""
+            state "05", icon:"https://smartthings-twc-icons.s3.amazonaws.com/05.png", label: ""
+            state "06", icon:"https://smartthings-twc-icons.s3.amazonaws.com/06.png", label: ""
+            state "07", icon:"https://smartthings-twc-icons.s3.amazonaws.com/07.png", label: ""
+            state "08", icon:"https://smartthings-twc-icons.s3.amazonaws.com/08.png", label: ""
+            state "09", icon:"https://smartthings-twc-icons.s3.amazonaws.com/09.png", label: ""
+            state "10", icon:"https://smartthings-twc-icons.s3.amazonaws.com/10.png", label: ""
+            state "11", icon:"https://smartthings-twc-icons.s3.amazonaws.com/11.png", label: ""
+            state "12", icon:"https://smartthings-twc-icons.s3.amazonaws.com/12.png", label: ""
+            state "13", icon:"https://smartthings-twc-icons.s3.amazonaws.com/13.png", label: ""
+            state "14", icon:"https://smartthings-twc-icons.s3.amazonaws.com/14.png", label: ""
+            state "15", icon:"https://smartthings-twc-icons.s3.amazonaws.com/15.png", label: ""
+            state "16", icon:"https://smartthings-twc-icons.s3.amazonaws.com/16.png", label: ""
+            state "17", icon:"https://smartthings-twc-icons.s3.amazonaws.com/17.png", label: ""
+            state "18", icon:"https://smartthings-twc-icons.s3.amazonaws.com/18.png", label: ""
+            state "19", icon:"https://smartthings-twc-icons.s3.amazonaws.com/19.png", label: ""
+            state "20", icon:"https://smartthings-twc-icons.s3.amazonaws.com/20.png", label: ""
+            state "21", icon:"https://smartthings-twc-icons.s3.amazonaws.com/21.png", label: ""
+            state "22", icon:"https://smartthings-twc-icons.s3.amazonaws.com/22.png", label: ""
+            state "23", icon:"https://smartthings-twc-icons.s3.amazonaws.com/23.png", label: ""
+            state "24", icon:"https://smartthings-twc-icons.s3.amazonaws.com/24.png", label: ""
+            state "25", icon:"https://smartthings-twc-icons.s3.amazonaws.com/25.png", label: ""
+            state "26", icon:"https://smartthings-twc-icons.s3.amazonaws.com/26.png", label: ""
+            state "27", icon:"https://smartthings-twc-icons.s3.amazonaws.com/27.png", label: ""
+            state "28", icon:"https://smartthings-twc-icons.s3.amazonaws.com/28.png", label: ""
+            state "29", icon:"https://smartthings-twc-icons.s3.amazonaws.com/29.png", label: ""
+            state "30", icon:"https://smartthings-twc-icons.s3.amazonaws.com/30.png", label: ""
+            state "31", icon:"https://smartthings-twc-icons.s3.amazonaws.com/31.png", label: ""
+            state "32", icon:"https://smartthings-twc-icons.s3.amazonaws.com/32.png", label: ""
+            state "33", icon:"https://smartthings-twc-icons.s3.amazonaws.com/33.png", label: ""
+            state "34", icon:"https://smartthings-twc-icons.s3.amazonaws.com/34.png", label: ""
+            state "35", icon:"https://smartthings-twc-icons.s3.amazonaws.com/35.png", label: ""
+            state "36", icon:"https://smartthings-twc-icons.s3.amazonaws.com/36.png", label: ""
+            state "37", icon:"https://smartthings-twc-icons.s3.amazonaws.com/37.png", label: ""
+            state "38", icon:"https://smartthings-twc-icons.s3.amazonaws.com/38.png", label: ""
+            state "39", icon:"https://smartthings-twc-icons.s3.amazonaws.com/39.png", label: ""
+            state "40", icon:"https://smartthings-twc-icons.s3.amazonaws.com/40.png", label: ""
+            state "41", icon:"https://smartthings-twc-icons.s3.amazonaws.com/41.png", label: ""
+            state "42", icon:"https://smartthings-twc-icons.s3.amazonaws.com/42.png", label: ""
+            state "43", icon:"https://smartthings-twc-icons.s3.amazonaws.com/43.png", label: ""
+            state "44", icon:"https://smartthings-twc-icons.s3.amazonaws.com/44.png", label: ""
+            state "45", icon:"https://smartthings-twc-icons.s3.amazonaws.com/45.png", label: ""
+            state "46", icon:"https://smartthings-twc-icons.s3.amazonaws.com/46.png", label: ""
+            state "47", icon:"https://smartthings-twc-icons.s3.amazonaws.com/47.png", label: ""
+state "na", icon:"https://smartthings-twc-icons.s3.amazonaws.com/na.png", label: ""
         }
         
         valueTile("windgust", "device.windgust") {
@@ -269,52 +274,63 @@ private def getWeatherInfo(){
     
     //Grab the appropriate weather based on user's imput
     if(settings.zipCode){
-    	log.debug("Using user Provided Zip for WU Service ${settings.zipCode}.")
-    	//Send Zip to WU Web Service
-    	weather.Conditions = getWeatherFeature("conditions", settings.zipCode)
-        weather.Forecast = getWeatherFeature("forecast", settings.zipCode)
+    	log.debug("Using user Provided Zip for TWC Service ${settings.zipCode}.")
+    	//Send Zip to TWC Web Service
+    	weather.Conditions = getTwcConditions(settings.zipCode)
+        weather.Forecast = getTwcForecast(settings.zipCode)
+		weather.Location = getTwcLocation(settings.zipCode)
     } else {
-    	log.debug("Using system Provided Zip for WU Service.")
+    	log.debug("Using system Provided Zip for TWC Service.")
     	//Let the hub send it's assumed location.
-    	weather.Conditions = getWeatherFeature("conditions")
-        weather.Forecast = getWeatherFeature("forecast")
+    	weather.Conditions = getTwcConditions()
+        weather.Forecast = getTwcForecast()
+		weather.Location = getTwcLocation()
     }
     
     return weather
 }
 
+private def setWeatherLocaiton(weatherLocationInfo){
+	
+	if(weatherLocationInfo){
+        //location
+        log.debug("Location ${weatherLocationInfo.displayName}, ${weatherLocationInfo.adminDistrictCode} ${weatherLocationInfo.postalCode}")
+        sendEvent(name: "location", value: "${weatherLocationInfo.displayName}, ${weatherLocationInfo.adminDistrictCode} ${weatherLocationInfo.postalCode}")
+	}
+}
+
 private def setWeatherConditions(weatherConditions){
-    if(weatherConditions && weatherConditions.current_observation){
-    	def obs = weatherConditions.current_observation
-    	//WU sent information.
+    if(weatherConditions){
+    	def obs = weatherConditions
+    	//TWC sent information.
         if(location.temperatureScale == "C") {
             //Temp
-            log.debug("Temp ${obs.temp_c}C")
-            sendEvent(name: "temperature", value: obs.temp_c, unit: "C")
+            log.debug("Temp ${obs.temperature}C")
+            sendEvent(name: "temperature", value: obs.temperature, unit: "C")
             //Temp - Feels like
-            log.debug("Feels Like ${obs.feelslike_c}C")
-            sendEvent(name: "feelsliketemperature", value: obs.feelslike_c, unit: "C")
+            log.debug("Feels Like ${obs.temperatureFeelsLike}C")
+            sendEvent(name: "feelsliketemperature", value: obs.temperatureFeelsLike, unit: "C")
             //Wind
-            log.debug("Wind speeds ${obs.wind_kph} KPH")
-            sendEvent(name: "wind", value: obs.wind_kph, unit: "kph")
-            log.debug("Wind Gusts ${obs.wind_gust_kph} KPH")
-            sendEvent(name: "windgust", value: obs.wind_gust_kph, unit: "kph")
+            log.debug("Wind speeds ${obs.windSpeed} KPH")
+            sendEvent(name: "wind", value: obs.windSpeed, unit: "kph")
+            log.debug("Wind Gusts ${obs.windGust} KPH")
+            sendEvent(name: "windgust", value: obs.windGust, unit: "kph")
         } else {
             //Temp
-            log.debug("Temp ${obs.temp_f}F")
-            sendEvent(name: "temperature", value: obs.temp_f, unit: "F")
+            log.debug("Temp ${obs.temperature}F")
+            sendEvent(name: "temperature", value: obs.temperature, unit: "F")
             //Temp - Feels like
-            log.debug("Feels Like ${obs.feelslike_f}F")
-            sendEvent(name: "feelsliketemperature", value: obs.feelslike_f, unit: "F")
+            log.debug("Feels Like ${obs.temperatureFeelsLike}F")
+            sendEvent(name: "feelsliketemperature", value: obs.temperatureFeelsLike, unit: "F")
             //Wind            
-            log.debug("Wind speeds ${obs.wind_mph} MPH")
-            sendEvent(name: "wind", value: obs.wind_mph, unit: "mph")
-            log.debug("Wind Gusts ${obs.wind_gust_mph} MPH")   
-            sendEvent(name: "windgust", value: obs.wind_gust_mph, unit: "mph")
+            log.debug("Wind speeds ${obs.windSpeed} MPH")
+            sendEvent(name: "wind", value: obs.windSpeed, unit: "mph")
+            log.debug("Wind Gusts ${obs.windGust} MPH")   
+            sendEvent(name: "windgust", value: obs.windGust, unit: "mph")
         }
         
-        //Precip Notification - WU Sends Huge Decimal places, can't parse to int.
-        if(obs.precip_1hr_in.toDouble() > 0){
+        //Precip Notification - TWC Sends Huge Decimal places, can't parse to int.
+        if(obs.precip1Hour.toDouble() > 0){
             log.debug("Currently Wet");
             sendEvent(name: "water", value: "wet")
         } else {
@@ -323,62 +339,78 @@ private def setWeatherConditions(weatherConditions){
         }
         
         //Humidity
-        log.debug("Humidty ${obs.relative_humidity.tokenize('%')[0].toInteger()}%")
-        sendEvent(name: "humidity", value: obs.relative_humidity.tokenize('%')[0].toInteger(), unit: "%")
+        log.debug("Humidty ${obs.relativeHumidity}%")
+        sendEvent(name: "humidity", value: obs.relativeHumidity, unit: "%")
         
-        //location
-        log.debug("Location ${obs.observation_location.full}")
-        sendEvent(name: "location", value: obs.observation_location.full)
         
         //Weather Icon
-        def weatherIcon = obs.icon_url.split("/")[-1].split("\\.")[0]
-        log.debug("Weather Icon ${weatherIcon}")
-        sendEvent(name: "weatherIcon", value: weatherIcon, displayed: false)
+        log.debug("Weather Icon ${obs.iconCode}")
+        sendEvent(name: "weatherIcon", value: obs.iconCode as String, displayed: false)
         
         //Observation Time
-        log.debug(obs.observation_time)
-        sendEvent(name: "observedtime", value: obs.observation_time)
+        log.debug(obs.validTimeLocal)
+        sendEvent(name: "observedtime", value: obs.validTimeLocal)
         
         //UV Index
-        log.debug("UV Index ${obs.UV}")
-        sendEvent(name: "uv", value: obs.UV)
+        log.debug("UV Index ${obs.uvIndex}")
+        sendEvent(name: "uv", value: obs.uvIndex)
         
         
     } else {
-    	//Weather Underground did not return any weather information.
-    	log.warn("Unable to get current weather conditions from Weather Underground API.")
+    	//Weather Channel did not return any weather information.
+    	log.warn("Unable to get current weather conditions from Weather Channel API.")
     }
 }
 
 private def setWeatherForecast(weatherForecast){
 
-    if(weatherForecast && weatherForecast.forecast && weatherForecast.forecast.simpleforecast && weatherForecast.forecast.simpleforecast.forecastday){
+    if(weatherForecast){
+		
         //Grab the first day of the forecast
-        def forecastDay = weatherForecast.forecast.simpleforecast.forecastday[0]
-        //WU sent information.
+        def todayHigh = null
+		if(weatherForecast.temperatureMax){
+			todayHigh = weatherForecast.temperatureMax[0]
+			//Grab Next Day
+			if(!todayHigh){
+				todayHigh = weatherForecast.temperatureMax[1]
+			}
+		}
+		def todayLow = null
+		if(weatherForecast.temperatureMin){
+			todayLow = weatherForecast.temperatureMin[0]
+			//Grab Next Day
+			if(!todayLow){
+				todayLow = weatherForecast.temperatureMin[1]
+			}
+		}
+        //TWC sent information.
         //Temp High
-        if(forecastDay.high){
+        if(todayHigh){
             if(location.temperatureScale == "C") {
-                log.debug("High Temp ${forecastDay.high.celsius}")
-                sendEvent(name: "hightemperature", value: forecastDay.high.celsius, unit: "C")
+                log.debug("High Temp ${todayHigh}")
+                sendEvent(name: "hightemperature", value: todayHigh, unit: "C")
             } else {
-                log.debug("High Temp ${forecastDay.high.fahrenheit}")
-                sendEvent(name: "hightemperature", value: forecastDay.high.fahrenheit, unit: "F")
+                log.debug("High Temp ${todayHigh}")
+                sendEvent(name: "hightemperature", value: todayHigh, unit: "F")
             }
-        }
+        } else {
+			log.debug("High Temp NULL")
+		}
         //Temp Low
-        if(forecastDay.low){
+        if(todayLow){
             if(location.temperatureScale == "C") {
-                log.debug("Low Temp ${forecastDay.low.celsius}")
-                sendEvent(name: "lowtemperature", value: forecastDay.low.celsius, unit: "C")
+                log.debug("Low Temp ${todayLow}")
+                sendEvent(name: "lowtemperature", value: todayLow, unit: "C")
             } else {
-                log.debug("Low Temp ${forecastDay.low.fahrenheit}")
-                sendEvent(name: "lowtemperature", value: forecastDay.low.fahrenheit, unit: "F")
+                log.debug("Low Temp ${todayLow}")
+                sendEvent(name: "lowtemperature", value: todayLow, unit: "F")
             }
-        } 
+        } else {
+			log.debug("Low Temp NULL")
+		}
     } else {
     	//Weather Underground did not return any weather information.
-    	log.warn("Unable to get current weather conditions from Weather Underground API.")
+    	log.warn("Unable to get current weather conditions from Weather Channel API.")
     }
 }
 
@@ -388,6 +420,7 @@ def poll() {
         def weather = getWeatherInfo()
     
         setWeatherConditions(weather.Conditions)
+		setWeatherLocaiton(weather.Location)
         setWeatherForecast(weather.Forecast)
     }catch(all){
         log.error(all)
