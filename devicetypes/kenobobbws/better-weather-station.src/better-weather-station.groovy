@@ -77,6 +77,7 @@ metadata {
         capability "Sensor"
         capability "Temperature Measurement"
         capability "Water Sensor"
+		capability "Ultraviolet Index"
         
         //Expose custom attributes to Smart Apps
         attribute "hightemperature","number"
@@ -137,6 +138,11 @@ metadata {
         valueTile("uv", "device.uv") {
             state "default", label:'UV Index ${currentValue}',
             backgroundColors: uvRangs
+        }
+		
+        //Define UV Index
+        valueTile("ultravioletIndex", "device.ultravioletIndex") {
+            state "default", label:'UV Index ${currentValue}'
         }
         
         //Define Location
@@ -217,7 +223,7 @@ state "na", icon:"https://smartthings-twc-icons.s3.amazonaws.com/na.png", label:
         
         main "temperature"
         details(
-            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "wind", "lowtemperature", "uv", "windgust", "water", "refresh", "observedtime" , "location"])
+            ["temperature", "feelsliketemperature", "weatherIcon", "hightemperature", "humidity", "wind", "lowtemperature", "uv", "windgust", "water", "refresh", "ultravioletIndex", "observedtime" , "location"])
     }
 }
 
@@ -354,12 +360,23 @@ private def setWeatherConditions(weatherConditions){
         //UV Index
         log.debug("UV Index ${obs.uvIndex}")
         sendEvent(name: "uv", value: obs.uvIndex)
+        log.debug("UV Factored Index ${factorUVIndex(obs.uvIndex)}")
+		sendEvent(name: "ultravioletIndex", value: factorUVIndex(obs.uvIndex))
         
         
     } else {
     	//Weather Channel did not return any weather information.
     	log.warn("Unable to get current weather conditions from Weather Channel API.")
     }
+}
+
+//Factors teh weather API from 0-10 to 0-255.
+private def factorUVIndex(uvIndexObs){
+	if(uvIndexObs){
+		return uvIndexObs * 25.5
+	} else {
+		return 0;
+	}
 }
 
 private def setWeatherForecast(weatherForecast){
