@@ -1,7 +1,7 @@
 /**
  *  Automated Lock Notifier
  *
- *  Copyright 2018 kenobob
+ *  Copyright 2019 kenobob
  *
  *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  *  in compliance with the License. You may obtain a copy of the License at:
@@ -44,7 +44,7 @@ preferences {
 def installed()
 {
     logtrace("Executing 'installed'")
-    log.debug("Installed with settings: ${settings}")
+    logdebug("Installed with settings: ${settings}")
     initialize()
     logtrace("End Executing 'installed'")
 }
@@ -52,7 +52,7 @@ def installed()
 def updated()
 {
     logtrace("Executing 'updated'")
-    log.debug("Updated with settings: ${settings}")
+    logdebug("Updated with settings: ${settings}")
     initialize()
     logtrace("End Executing 'updated'")
 }
@@ -66,11 +66,10 @@ def initialize() {
     unsubscribe()
     
     //Reset variables
-    state.schedulerActive = null
-    state.previousMode = location.currentMode;
+    state.schedulerActive = false
     
     //Subscribe to Sensor Changes
-    log.debug("Subscribing to Mode Events")
+    logdebug("Subscribing to Mode Events")
     subscribe(location, "mode", modeChangeEventHandler)
 	
     logtrace("End Executing 'initialize'")
@@ -82,22 +81,21 @@ def modeChangeEventHandler(evt)
 
     //Check to See if the Mode Changed
     if(evt.isStateChange()){
-        //If state has changed check current Mode
-        def currentMode = location.currentMode;
-        if(state.previousMode.id != currentMode.id){
-            //Mode changed, check our list
-            if(modes.contains(previousMode)){
-                //Current Mode should lock the door. Start Scheduler
-                runIn(secondsDelay, checkIfDoorLocked, [overwrite: true])
 
-                state.schedulerActive = true  
-                log.debug("checkIfDoorLocked Scheduled")
-            } else {
-                //Not in the right mode, kill any schedules                
-                state.schedulerActive = false
-                unschedulecheckIfDoorLocked()
-            }
+        def currentMode = location.currentMode;
+        //Mode changed, check our list
+        if(modes.contains(currentMode)){
+            //Current Mode should lock the door. Start Scheduler
+            runIn(secondsDelay, checkIfDoorLocked, [overwrite: true])
+
+            state.schedulerActive = true  
+            logdebug("checkIfDoorLocked Scheduled")
+        } else {
+            //Not in the right mode, kill any schedules                
+            state.schedulerActive = false
+            unschedulecheckIfDoorLocked()
         }
+        
     }
     
     logtrace("End Executing 'lockChangeEventHandler'")
@@ -123,9 +121,11 @@ def checkIfDoorLocked(){
             notifyUser(eventData)
 
     } else {
-        log.debug("Door Locked Successfully")
+        log.info("Door Locked Successfully")
     }
+
     
+    state.schedulerActive = false
     logtrace("End Executing 'checkIfDoorLocked'")
 }
 
@@ -148,10 +148,10 @@ private def unschedulecheckIfDoorLocked(){
 
 def notifyUser(data){
     logtrace("Executing 'notifyUser'")
-    log.debug("Notificaiton Data: ${data}")
+    logdebug("Notificaiton Data: ${data}")
     
     if(data.sendPushMessage == "Yes" || data.phoneNumber){
-        log.debug("Notifications Turned on")
+        logdebug("Notifications Turned on")
         def options = null
         
         if(data.sendPushMessage == "Yes" && data.phoneNumber) {
@@ -161,7 +161,7 @@ def notifyUser(data){
         } else {
             options = [method: "phone", phone: data.phoneNumber]
         }
-        log.debug("Options for Notification: ${options}")
+        logdebug("Options for Notification: ${options}")
         
         sendNotification(data.notificationText, options)
     } else {
@@ -181,7 +181,13 @@ private def isDoorLocked(){
 }
 
 private def logtrace(message){
-    if(true){
+    if(false){
         log.trace(message)
+    }
+}
+
+private def logdebug(message){
+    if(false){
+        log.debug(message)
     }
 }
